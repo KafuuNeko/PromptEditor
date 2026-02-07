@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Prompt Editor</string>
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="delete">Delete</string>
+    <string name="unknown_version">Unknown version</string>
+</resources>
