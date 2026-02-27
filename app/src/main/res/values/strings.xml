@@ -4,4 +4,6 @@
     <string name="confirm">Confirm</string>
     <string name="delete">Delete</string>
     <string name="unknown_version">Unknown version</string>
+    <string name="about">About</string>
+    <string name="back">Back</string>
 </resources>

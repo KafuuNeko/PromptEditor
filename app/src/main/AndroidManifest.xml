@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
-        android:name=".PromptEditor"
+        android:name=".PromptEditorApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -12,9 +12,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PromptEditor">
         <activity
-            android:name=".feature.MainActivity"
+            android:name=".feature.main.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.PromptEditor">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
