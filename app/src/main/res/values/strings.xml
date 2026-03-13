@@ -1,9 +1,96 @@
 <resources>
+    <!-- App -->
     <string name="app_name">Prompt Editor</string>
+
+    <!-- Common -->
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
     <string name="delete">Delete</string>
+    <string name="back">Back</string>
+    <string name="save">Save</string>
+    <string name="edit">Edit</string>
+    <string name="clear">Clear</string>
+    <string name="exit">Exit</string>
+    <string name="ok">OK</string>
+    <string name="search">Search</string>
+    <string name="import_csv">Import CSV</string>
+    <string name="add">Add</string>
+    <string name="copy">Copy</string>
     <string name="unknown_version">Unknown version</string>
     <string name="about">About</string>
-    <string name="back">Back</string>
+
+    <!-- Main Screen -->
+    <string name="exit_app_confirmation">Are you sure you want to exit?</string>
+    <string name="create_preset_set">Create Preset Set</string>
+    <string name="delete_preset_set">Delete Preset Set</string>
+    <string name="delete_preset_set_confirmation">Are you sure you want to delete preset set \"%1$s\"? This will also delete all presets in it.</string>
+    <string name="import_tags">Import Tags</string>
+    <string name="no_preset_sets">No preset sets, tap the top right to create one</string>
+    <string name="preset_set_created">Preset set created: %1$s</string>
+    <string name="preset_set_deleted">Preset set deleted</string>
+    <string name="preset_set_name_hint">Enter preset set name</string>
+
+    <!-- Preset Edit -->
+    <string name="unsaved_changes">Unsaved Changes</string>
+    <string name="unsaved_changes_confirmation">You have unsaved changes. Are you sure you want to exit?</string>
+    <string name="save_and_exit">Save and Exit</string>
+    <string name="exit_without_save">Exit Without Saving</string>
+    <string name="delete_tag">Delete Tag</string>
+    <string name="delete_tag_confirmation">Are you sure you want to delete tag \"%1$s\"?</string>
+    <string name="switch_to_list_mode">Switch to List Mode</string>
+    <string name="switch_to_text_mode">Switch to Text Mode</string>
+    <string name="add_from_tags_repository">Add from Tags Repository</string>
+    <string name="prompt_separated_by_commas">Prompt (separated by commas)</string>
+    <string name="no_prompts_switch_to_text">No prompts yet, switch to text mode to add</string>
+    <string name="tip_drag_to_reorder">Tip: Long press and drag to reorder</string>
+    <string name="weight_format">Weight: %1$s</string>
+    <string name="failed_to_load_preset">Failed to load preset</string>
+    <string name="saved">Saved</string>
+    <string name="tags_added">Added %1$d tags</string>
+
+    <!-- Preset Set Edit -->
+    <string name="create_preset">Create Preset</string>
+    <string name="preset_name">Preset Name</string>
+    <string name="delete_preset">Delete Preset</string>
+    <string name="delete_preset_confirmation">Are you sure you want to delete preset \"%1$s\"?</string>
+    <string name="add_preset">Add Preset</string>
+    <string name="no_presets">No presets, tap the button below to create one</string>
+    <string name="preset_created">Preset created: %1$s</string>
+    <string name="preset_deleted">Preset deleted</string>
+    <string name="copied_to_clipboard">Copied to clipboard</string>
+
+    <!-- Tags Edit -->
+    <string name="add_tag">Add Tag</string>
+    <string name="edit_tag">Edit Tag</string>
+    <string name="clear_all_tags">Clear All Tags</string>
+    <string name="clear_all_tags_confirmation">Are you sure you want to clear all tags? This action cannot be undone.</string>
+    <string name="tags_editor">Tags Editor</string>
+    <string name="no_tags_import_or_add">No tags, import CSV or add new ones</string>
+    <string name="tag_name">Tag Name</string>
+    <string name="tag_description">Tag Description</string>
+    <string name="tag_added">Tag added: %1$s</string>
+    <string name="tag_name_exists">Tag name already exists</string>
+    <string name="tag_updated">Tag updated</string>
+    <string name="tag_deleted">Tag deleted</string>
+    <string name="all_tags_cleared">All tags cleared</string>
+    <string name="tags_imported">Tags imported: %1$d new, %2$d updated, %3$d failed</string>
+    <string name="import_complete">Import complete: %1$d succeeded, %2$d failed</string>
+
+    <!-- Tags Import -->
+    <string name="tags_import">Tags Import</string>
+    <string name="select_csv_file">Select CSV File to Import</string>
+    <string name="csv_format说明">CSV Format</string>
+    <string name="csv_format_description">Each line format: tag_name, tag_description\n\nExample:\ngirl, a girl\ncat ears, cat ears</string>
+    <string name="tags_imported_count">Imported %1$d tags</string>
+    <string name="no_tags_import_csv">No tags, please import a CSV file</string>
+    <string name="file_read_failed">Failed to read file: %1$s</string>
+
+    <!-- Tags Search -->
+    <string name="search_tags">Search Tags</string>
+    <string name="search_tags_placeholder">Search Tags…</string>
+    <string name="tags_selected">%1$d tags selected</string>
+    <string name="confirm_selection">Confirm</string>
+
+    <!-- Confirm Dialog -->
+    <string name="confirm_delete">Confirm Delete</string>
 </resources>

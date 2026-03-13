@@ -1,0 +1,96 @@
+<resources>
+    <!-- App -->
+    <string name="app_name">プロンプトエディター</string>
+
+    <!-- Common -->
+    <string name="cancel">キャンセル</string>
+    <string name="confirm">確認</string>
+    <string name="delete">削除</string>
+    <string name="back">戻る</string>
+    <string name="save">保存</string>
+    <string name="edit">編集</string>
+    <string name="clear">クリア</string>
+    <string name="exit">終了</string>
+    <string name="ok">OK</string>
+    <string name="search">検索</string>
+    <string name="import_csv">CSVインポート</string>
+    <string name="add">追加</string>
+    <string name="copy">コピー</string>
+    <string name="unknown_version">バージョン不明</string>
+    <string name="about">アプリについて</string>
+
+    <!-- Main Screen -->
+    <string name="exit_app_confirmation">アプリを終了しますか？</string>
+    <string name="create_preset_set">プリセットセットを作成</string>
+    <string name="delete_preset_set">プリセットセットを削除</string>
+    <string name="delete_preset_set_confirmation">プリセットセット「%1$s」を削除しますか？この操作すると其中的すべてのプリセットも削除されます。</string>
+    <string name="import_tags">Tagsをインポート</string>
+    <string name="no_preset_sets">プリセットセットがありません，右上をタップして作成</string>
+    <string name="preset_set_created">プリセットセットを作成しました: %1$s</string>
+    <string name="preset_set_deleted">プリセットセットを削除しました</string>
+    <string name="preset_set_name_hint">プリセットセット名を入力</string>
+
+    <!-- Preset Edit -->
+    <string name="unsaved_changes">未保存の変更</string>
+    <string name="unsaved_changes_confirmation">未保存の変更があります。終了しますか？</string>
+    <string name="save_and_exit">保存して終了</string>
+    <string name="exit_without_save">保存せずに終了</string>
+    <string name="delete_tag">Tagを削除</string>
+    <string name="delete_tag_confirmation">Tag「%1$s」を削除しますか？</string>
+    <string name="switch_to_list_mode">リストモードに切り替え</string>
+    <string name="switch_to_text_mode">テキストモードに切り替え</string>
+    <string name="add_from_tags_repository">Tagsリポジトリから追加</string>
+    <string name="prompt_separated_by_commas">プロンプト（カンマ区切り）</string>
+    <string name="no_prompts_switch_to_text">プロンプトがありません，テキストモードに切り替えて追加</string>
+    <string name="tip_drag_to_reorder">ヒント：長押しでドラッグして並べ替え</string>
+    <string name="weight_format">重み: %1$s</string>
+    <string name="failed_to_load_preset">プリセットを読み込めません</string>
+    <string name="saved">保存しました</string>
+    <string name="tags_added">%1$d個のTagsを追加しました</string>
+
+    <!-- Preset Set Edit -->
+    <string name="create_preset">プリセットを作成</string>
+    <string name="preset_name">プリセット名</string>
+    <string name="delete_preset">プリセットを削除</string>
+    <string name="delete_preset_confirmation">プリセット「%1$s」を削除しますか？</string>
+    <string name="add_preset">プリセットを追加</string>
+    <string name="no_presets">プリセットがありません，下のボタンをタップして作成</string>
+    <string name="preset_created">プリセットを作成しました: %1$s</string>
+    <string name="preset_deleted">プリセットを削除しました</string>
+    <string name="copied_to_clipboard">クリップボードにコピーしました</string>
+
+    <!-- Tags Edit -->
+    <string name="add_tag">Tagを追加</string>
+    <string name="edit_tag">Tagを編集</string>
+    <string name="clear_all_tags">すべてのTagsをクリア</string>
+    <string name="clear_all_tags_confirmation">すべてのTagsをクリアしますか？この操作は元に戻せません。</string>
+    <string name="tags_editor">Tagsエディター</string>
+    <string name="no_tags_import_or_add">Tagsがありません，CSVをインポートするか追加</string>
+    <string name="tag_name">Tag名</string>
+    <string name="tag_description">Tagの説明</string>
+    <string name="tag_added">Tagを追加しました: %1$s</string>
+    <string name="tag_name_exists">Tag名は既に存在します</string>
+    <string name="tag_updated">Tagを更新しました</string>
+    <string name="tag_deleted">Tagを削除しました</string>
+    <string name="all_tags_cleared">すべてのTagsをクリアしました</string>
+    <string name="tags_imported">Tagsインポート: 新規%1$d, 更新%2$d, 失敗%3$d</string>
+
+    <!-- Tags Import -->
+    <string name="tags_import">Tagsインポート</string>
+    <string name="select_csv_file">インポートするCSVファイルを選択</string>
+    <string name="csv_format说明">CSVフォーマット</string>
+    <string name="csv_format_description">各行の形式: tag名, tagの説明\n\n例:\ngirl, 、女の子\ncat ears, 猫耳</string>
+    <string name="tags_imported_count">%1$d個のTagsをインポートしました</string>
+    <string name="no_tags_import_csv">Tagsがありません，CSVファイルをインポート</string>
+    <string name="import_complete">インポート完了: 成功%1$d件, 失敗%2$d件</string>
+    <string name="file_read_failed">ファイルの読み込みに失敗しました: %1$s</string>
+
+    <!-- Tags Search -->
+    <string name="search_tags">Tagsを検索</string>
+    <string name="search_tags_placeholder">Tagsを検索...</string>
+    <string name="tags_selected">%1$d個のTagsを選択</string>
+    <string name="confirm_selection">確認</string>
+
+    <!-- Confirm Dialog -->
+    <string name="confirm_delete">削除を確認</string>
+</resources>

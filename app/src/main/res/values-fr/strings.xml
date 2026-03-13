@@ -1,0 +1,96 @@
+<resources>
+    <!-- App -->
+    <string name="app_name">Éditeur de Prompts</string>
+
+    <!-- Common -->
+    <string name="cancel">Annuler</string>
+    <string name="confirm">Confirmer</string>
+    <string name="delete">Supprimer</string>
+    <string name="back">Retour</string>
+    <string name="save">Enregistrer</string>
+    <string name="edit">Modifier</string>
+    <string name="clear">Effacer</string>
+    <string name="exit">Quitter</string>
+    <string name="ok">OK</string>
+    <string name="search">Rechercher</string>
+    <string name="import_csv">Importer CSV</string>
+    <string name="add">Ajouter</string>
+    <string name="copy">Copier</string>
+    <string name="unknown_version">Version inconnue</string>
+    <string name="about">À propos</string>
+
+    <!-- Main Screen -->
+    <string name="exit_app_confirmation">Voulez-vous vraiment quitter l\'application?</string>
+    <string name="create_preset_set">Créer un ensemble de préréglages</string>
+    <string name="delete_preset_set">Supprimer l\'ensemble de préréglages</string>
+    <string name="delete_preset_set_confirmation">Voulez-vous vraiment supprimer l\'ensemble de préréglages \"%1$s\"? Cela supprimera également tous les préréglages qu\'il contient.</string>
+    <string name="import_tags">Importer des Tags</string>
+    <string name="no_preset_sets">Aucun ensemble de préréglages, appuyez en haut à droite pour en créer un</string>
+    <string name="preset_set_created">Ensemble de préréglages créé: %1$s</string>
+    <string name="preset_set_deleted">Ensemble de préréglages supprimé</string>
+    <string name="preset_set_name_hint">Entrez le nom de l\'ensemble de préréglages</string>
+
+    <!-- Preset Edit -->
+    <string name="unsaved_changes">Modifications non enregistrées</string>
+    <string name="unsaved_changes_confirmation">Vous avez des modifications non enregistrées. Voulez-vous vraiment quitter?</string>
+    <string name="save_and_exit">Enregistrer et quitter</string>
+    <string name="exit_without_save">Quitter sans enregistrer</string>
+    <string name="delete_tag">Supprimer le Tag</string>
+    <string name="delete_tag_confirmation">Voulez-vous vraiment supprimer le tag \"%1$s\"?</string>
+    <string name="switch_to_list_mode">Passer en mode liste</string>
+    <string name="switch_to_text_mode">Passer en mode texte</string>
+    <string name="add_from_tags_repository">Ajouter depuis le dépôt de Tags</string>
+    <string name="prompt_separated_by_commas">Prompt (séparé par des virgules)</string>
+    <string name="no_prompts_switch_to_text">Aucun prompt, passez en mode texte pour en ajouter</string>
+    <string name="tip_drag_to_reorder">Astuce: Maintenez appuyé et faites glisser pour réorganiser</string>
+    <string name="weight_format">Poids: %1$s</string>
+    <string name="failed_to_load_preset">Impossible de charger le préréglage</string>
+    <string name="saved">Enregistré</string>
+    <string name="tags_added">%1$d tags ajoutés</string>
+
+    <!-- Preset Set Edit -->
+    <string name="create_preset">Créer un préréglage</string>
+    <string name="preset_name">Nom du préréglage</string>
+    <string name="delete_preset">Supprimer le préréglage</string>
+    <string name="delete_preset_confirmation">Voulez-vous vraiment supprimer le préréglage \"%1$s\"?</string>
+    <string name="add_preset">Ajouter un préréglage</string>
+    <string name="no_presets">Aucun préréglage, appuyez sur le bouton ci-dessous pour en créer un</string>
+    <string name="preset_created">Préréglage créé: %1$s</string>
+    <string name="preset_deleted">Préréglage supprimé</string>
+    <string name="copied_to_clipboard">Copié dans le presse-papiers</string>
+
+    <!-- Tags Edit -->
+    <string name="add_tag">Ajouter un Tag</string>
+    <string name="edit_tag">Modifier le Tag</string>
+    <string name="clear_all_tags">Effacer tous les Tags</string>
+    <string name="clear_all_tags_confirmation">Voulez-vous vraiment effacer tous les tags? Cette action est irréversible.</string>
+    <string name="tags_editor">Éditeur de Tags</string>
+    <string name="no_tags_import_or_add">Aucun tag, importez un CSV ou ajoutez-en</string>
+    <string name="tag_name">Nom du Tag</string>
+    <string name="tag_description">Description du Tag</string>
+    <string name="tag_added">Tag ajouté: %1$s</string>
+    <string name="tag_name_exists">Le nom du tag existe déjà</string>
+    <string name="tag_updated">Tag mis à jour</string>
+    <string name="tag_deleted">Tag supprimé</string>
+    <string name="all_tags_cleared">Tous les tags ont été effacés</string>
+    <string name="tags_imported">Tags importés: %1$d nouveaux, %2$d mis à jour, %3$d échoués</string>
+
+    <!-- Tags Import -->
+    <string name="tags_import">Importation de Tags</string>
+    <string name="select_csv_file">Sélectionner un fichier CSV à importer</string>
+    <string name="csv_format说明">Format CSV</string>
+    <string name="csv_format_description">Format de chaque ligne: nom_tag, description_tag\n\nExemple:\ngirl, une fille\ncat ears, oreilles de chat</string>
+    <string name="tags_imported_count">%1$d tags importés</string>
+    <string name="no_tags_import_csv">Aucun tag, veuillez importer un fichier CSV</string>
+    <string name="import_complete">Importation terminée: %1$d réussis, %2$d échoués</string>
+    <string name="file_read_failed">Échec de la lecture du fichier: %1$s</string>
+
+    <!-- Tags Search -->
+    <string name="search_tags">Rechercher des Tags</string>
+    <string name="search_tags_placeholder">Rechercher des Tags...</string>
+    <string name="tags_selected">%1$d tags sélectionnés</string>
+    <string name="confirm_selection">Confirmer</string>
+
+    <!-- Confirm Dialog -->
+    <string name="confirm_delete">Confirmer la suppression</string>
+</resources>

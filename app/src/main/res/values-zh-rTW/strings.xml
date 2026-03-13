@@ -1,0 +1,96 @@
+<resources>
+    <!-- App -->
+    <string name="app_name">提示詞編輯器</string>
+
+    <!-- Common -->
+    <string name="cancel">取消</string>
+    <string name="confirm">確認</string>
+    <string name="delete">刪除</string>
+    <string name="back">返回</string>
+    <string name="save">儲存</string>
+    <string name="edit">編輯</string>
+    <string name="clear">清除</string>
+    <string name="exit">離開</string>
+    <string name="ok">確定</string>
+    <string name="search">搜尋</string>
+    <string name="import_csv">匯入CSV</string>
+    <string name="add">新增</string>
+    <string name="copy">複製</string>
+    <string name="unknown_version">未知版本</string>
+    <string name="about">關於</string>
+
+    <!-- Main Screen -->
+    <string name="exit_app_confirmation">確定要離開應用程式嗎？</string>
+    <string name="create_preset_set">建立預設集</string>
+    <string name="delete_preset_set">刪除預設集</string>
+    <string name="delete_preset_set_confirmation">確定要刪除預設集「%1$s」嗎？此操作將同時刪除其中的所有預設。</string>
+    <string name="import_tags">匯入Tags</string>
+    <string name="no_preset_sets">暫無預設集，點擊右上角建立</string>
+    <string name="preset_set_created">已建立預設集: %1$s</string>
+    <string name="preset_set_deleted">已刪除預設集</string>
+    <string name="preset_set_name_hint">請輸入預設集名稱</string>
+
+    <!-- Preset Edit -->
+    <string name="unsaved_changes">未儲存的變更</string>
+    <string name="unsaved_changes_confirmation">您有未儲存的變更，確定要離開嗎？</string>
+    <string name="save_and_exit">儲存並離開</string>
+    <string name="exit_without_save">不儲存離開</string>
+    <string name="delete_tag">刪除Tag</string>
+    <string name="delete_tag_confirmation">確定要刪除Tag「%1$s」嗎？</string>
+    <string name="switch_to_list_mode">切換到列表模式</string>
+    <string name="switch_to_text_mode">切換到文字模式</string>
+    <string name="add_from_tags_repository">從Tags庫新增</string>
+    <string name="prompt_separated_by_commas">提示詞(用逗號分隔)</string>
+    <string name="no_prompts_switch_to_text">暫無提示詞，請切換到文字模式新增</string>
+    <string name="tip_drag_to_reorder">提示：長按拖動排序</string>
+    <string name="weight_format">權重: %1$s</string>
+    <string name="failed_to_load_preset">無法載入預設</string>
+    <string name="saved">已儲存</string>
+    <string name="tags_added">已新增%1$d個Tags</string>
+
+    <!-- Preset Set Edit -->
+    <string name="create_preset">建立預設</string>
+    <string name="preset_name">預設名稱</string>
+    <string name="delete_preset">刪除預設</string>
+    <string name="delete_preset_confirmation">確定要刪除預設「%1$s」嗎？</string>
+    <string name="add_preset">新增預設</string>
+    <string name="no_presets">暫無預設，點擊下方按鈕建立</string>
+    <string name="preset_created">已建立預設: %1$s</string>
+    <string name="preset_deleted">已刪除預設</string>
+    <string name="copied_to_clipboard">已複製到剪貼簿</string>
+
+    <!-- Tags Edit -->
+    <string name="add_tag">新增Tag</string>
+    <string name="edit_tag">編輯Tag</string>
+    <string name="clear_all_tags">清除所有Tags</string>
+    <string name="clear_all_tags_confirmation">確定要清除所有Tags嗎？此操作無法復原。</string>
+    <string name="tags_editor">Tags編輯器</string>
+    <string name="no_tags_import_or_add">暫無Tags，請匯入CSV或新增</string>
+    <string name="tag_name">Tag名稱</string>
+    <string name="tag_description">Tag描述</string>
+    <string name="tag_added">已新增Tag: %1$s</string>
+    <string name="tag_name_exists">Tag名稱已存在</string>
+    <string name="tag_updated">已更新Tag</string>
+    <string name="tag_deleted">已刪除Tag</string>
+    <string name="all_tags_cleared">已清除所有Tags</string>
+    <string name="tags_imported">Tags匯入: 新增%1$d, 更新%2$d, 失敗%3$d</string>
+
+    <!-- Tags Import -->
+    <string name="tags_import">Tags匯入</string>
+    <string name="select_csv_file">選擇CSV檔案匯入</string>
+    <string name="csv_format说明">CSV格式說明</string>
+    <string name="csv_format_description">每行格式: tag名稱, tag描述\n\n例如:\ngirl, 女孩\ncat ears, 貓耳</string>
+    <string name="tags_imported_count">已匯入%1$d個Tags</string>
+    <string name="no_tags_import_csv">暫無Tags，請匯入CSV檔案</string>
+    <string name="import_complete">匯入完成: 成功%1$d條, 失敗%2$d條</string>
+    <string name="file_read_failed">讀取檔案失敗: %1$s</string>
+
+    <!-- Tags Search -->
+    <string name="search_tags">搜尋Tags</string>
+    <string name="search_tags_placeholder">搜尋Tags...</string>
+    <string name="tags_selected">已選擇: %1$d個Tags</string>
+    <string name="confirm_selection">確認</string>
+
+    <!-- Confirm Dialog -->
+    <string name="confirm_delete">確認刪除</string>
+</resources>

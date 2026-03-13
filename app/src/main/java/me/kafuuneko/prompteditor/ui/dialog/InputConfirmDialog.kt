@@ -43,7 +43,13 @@ fun InputConfirmDialog(
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.align(
+                    Alignment.Start
+                )
+            )
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
                 value = inputText,

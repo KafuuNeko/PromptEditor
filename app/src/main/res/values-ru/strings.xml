@@ -1,0 +1,96 @@
+<resources>
+    <!-- App -->
+    <string name="app_name">Редактор промптов</string>
+
+    <!-- Common -->
+    <string name="cancel">Отмена</string>
+    <string name="confirm">Подтвердить</string>
+    <string name="delete">Удалить</string>
+    <string name="back">Назад</string>
+    <string name="save">Сохранить</string>
+    <string name="edit">Редактировать</string>
+    <string name="clear">Очистить</string>
+    <string name="exit">Выход</string>
+    <string name="ok">ОК</string>
+    <string name="search">Поиск</string>
+    <string name="import_csv">Импорт CSV</string>
+    <string name="add">Добавить</string>
+    <string name="copy">Копировать</string>
+    <string name="unknown_version">Неизвестная версия</string>
+    <string name="about">О приложении</string>
+
+    <!-- Main Screen -->
+    <string name="exit_app_confirmation">Вы уверены, что хотите выйти из приложения?</string>
+    <string name="create_preset_set">Создать набор пресетов</string>
+    <string name="delete_preset_set">Удалить набор пресетов</string>
+    <string name="delete_preset_set_confirmation">Вы уверены, что хотите удалить набор пресетов \"%1$s\"? Это также удалит все пресеты в нём.</string>
+    <string name="import_tags">Импорт тегов</string>
+    <string name="no_preset_sets">Нет наборов пресетов, нажмите справа вверху для создания</string>
+    <string name="preset_set_created">Набор пресетов создан: %1$s</string>
+    <string name="preset_set_deleted">Набор пресетов удалён</string>
+    <string name="preset_set_name_hint">Введите название набора пресетов</string>
+
+    <!-- Preset Edit -->
+    <string name="unsaved_changes">Несохранённые изменения</string>
+    <string name="unsaved_changes_confirmation">У вас есть несохранённые изменения. Вы уверены, что хотите выйти?</string>
+    <string name="save_and_exit">Сохранить и выйти</string>
+    <string name="exit_without_save">Выйти без сохранения</string>
+    <string name="delete_tag">Удалить тег</string>
+    <string name="delete_tag_confirmation">Вы уверены, что хотите удалить тег \"%1$s\"?</string>
+    <string name="switch_to_list_mode">Переключить в режим списка</string>
+    <string name="switch_to_text_mode">Переключить в текстовый режим</string>
+    <string name="add_from_tags_repository">Добавить из хранилища тегов</string>
+    <string name="prompt_separated_by_commas">Промпт (через запятую)</string>
+    <string name="no_prompts_switch_to_text">Промптов пока нет, переключитесь в текстовый режим для добавления</string>
+    <string name="tip_drag_to_reorder">Совет: удерживайте и перетащите для изменения порядка</string>
+    <string name="weight_format">Вес: %1$s</string>
+    <string name="failed_to_load_preset">Не удалось загрузить пресет</string>
+    <string name="saved">Сохранено</string>
+    <string name="tags_added">Добавлено тегов: %1$d</string>
+
+    <!-- Preset Set Edit -->
+    <string name="create_preset">Создать пресет</string>
+    <string name="preset_name">Название пресета</string>
+    <string name="delete_preset">Удалить пресет</string>
+    <string name="delete_preset_confirmation">Вы уверены, что хотите удалить пресет \"%1$s\"?</string>
+    <string name="add_preset">Добавить пресет</string>
+    <string name="no_presets">Нет пресетов, нажмите кнопку ниже для создания</string>
+    <string name="preset_created">Пресет создан: %1$s</string>
+    <string name="preset_deleted">Пресет удалён</string>
+    <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
+
+    <!-- Tags Edit -->
+    <string name="add_tag">Добавить тег</string>
+    <string name="edit_tag">Редактировать тег</string>
+    <string name="clear_all_tags">Очистить все теги</string>
+    <string name="clear_all_tags_confirmation">Вы уверены, что хотите очистить все теги? Это действие нельзя отменить.</string>
+    <string name="tags_editor">Редактор тегов</string>
+    <string name="no_tags_import_or_add">Тегов нет, импортируйте CSV или добавьте</string>
+    <string name="tag_name">Название тега</string>
+    <string name="tag_description">Описание тега</string>
+    <string name="tag_added">Тег добавлен: %1$s</string>
+    <string name="tag_name_exists">Тег с таким названием уже существует</string>
+    <string name="tag_updated">Тег обновлён</string>
+    <string name="tag_deleted">Тег удалён</string>
+    <string name="all_tags_cleared">Все теги очищены</string>
+    <string name="tags_imported">Теги импортированы: %1$d новых, %2$d обновлено, %3$d неудачно</string>
+
+    <!-- Tags Import -->
+    <string name="tags_import">Импорт тегов</string>
+    <string name="select_csv_file">Выберите CSV файл для импорта</string>
+    <string name="csv_format说明">Формат CSV</string>
+    <string name="csv_format_description">Формат каждой строки: название_тега, описание_тега\n\nПример:\ngirl, девушка\ncat ears, кошачьи уши</string>
+    <string name="tags_imported_count">Импортировано тегов: %1$d</string>
+    <string name="no_tags_import_csv">Тегов нет, пожалуйста, импортируйте CSV файл</string>
+    <string name="import_complete">Импорт завершён: %1$d успешно, %2$d неудачно</string>
+    <string name="file_read_failed">Не удалось прочитать файл: %1$s</string>
+
+    <!-- Tags Search -->
+    <string name="search_tags">Поиск тегов</string>
+    <string name="search_tags_placeholder">Поиск тегов...</string>
+    <string name="tags_selected">Выбрано тегов: %1$d</string>
+    <string name="confirm_selection">Подтвердить</string>
+
+    <!-- Confirm Dialog -->
+    <string name="confirm_delete">Подтвердить удаление</string>
+</resources>

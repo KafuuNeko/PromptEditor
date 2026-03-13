@@ -21,6 +21,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".feature.presetset.PresetSetEditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PromptEditor" />
+        <activity
+            android:name=".feature.preset.PresetEditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PromptEditor" />
+        <activity
+            android:name=".feature.tagsedit.TagsEditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PromptEditor" />
+        <activity
+            android:name=".feature.tagssearch.TagsSearchActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PromptEditor" />
     </application>
 
 </manifest>
