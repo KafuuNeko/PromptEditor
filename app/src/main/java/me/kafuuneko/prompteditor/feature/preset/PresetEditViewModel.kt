@@ -27,9 +27,24 @@ class PresetEditViewModel :
     private var _currentPresetId: Long = 0L
 
     companion object {
-        // 匹配格式: {tag} 或 {tag:weight} 或 [tag] 或 [tag:weight]
-        private val WEIGHT_PATTERN =
-            Pattern.compile("^\\{([^:}]+)(?::([^}]+))?\\}$|^\\[([^:\\]]+)(?::([^\\]]+))?\\]$")
+        // 匹配格式:
+        // 单层: {tag}, {tag:weight}, [tag], [tag:weight]
+        // 多层: {{tag}}, {{tag:weight}}, [[tag]], [[tag:weight]]
+        private val WEIGHT_PATTERN = Pattern.compile(
+            "^" +
+            // 多层大括号: {{tag}} 或 {{tag:weight}}
+            "(\\{{2,})([^:}]+)(?::([^}]+))?(\\}{2,})" +
+            "|" +
+            // 多层中括号: [[tag]] 或 [[tag:weight]]
+            "(\\[{2,})([^:\\]]+)(?::([^]]+))?(]{2,})" +
+            "|" +
+            // 单层大括号: {tag} 或 {tag:weight}
+            "(\\{)([^:}]+)(?::([^}]+))?(\\})" +
+            "|" +
+            // 单层中括号: [tag] 或 [tag:weight]
+            "(\\[)([^:\\]]+)(?::([^]]+))?(])" +
+            "$"
+        )
         private val TAG_SPLITTER = Pattern.compile(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
     }
 
@@ -329,8 +344,9 @@ class PresetEditViewModel :
     private fun extractTagAndWeight(text: String): Pair<String, String> {
         val matcher = WEIGHT_PATTERN.matcher(text)
         return if (matcher.matches()) {
-            val tagName = matcher.group(1) ?: matcher.group(3) ?: text
-            val weight = matcher.group(2) ?: matcher.group(4) ?: ""
+            // Groups: 1-4 (multi {}), 5-8 (multi []), 9-12 (single {}), 13-16 (single [])
+            val tagName = matcher.group(2) ?: matcher.group(6) ?: matcher.group(10) ?: matcher.group(14) ?: text
+            val weight = matcher.group(3) ?: matcher.group(7) ?: matcher.group(11) ?: matcher.group(15) ?: ""
             tagName to weight
         } else {
             text to ""
