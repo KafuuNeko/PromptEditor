@@ -125,4 +125,32 @@ class PresetSetEditViewModel :
     fun onBack() {
         PresetSetEditUiEffect.NavigateBack.tryEmit()
     }
+
+    @UiIntentObserver(PresetSetEditUiIntent.ShowRenameDialog::class)
+    fun onShowRenameDialog(intent: PresetSetEditUiIntent.ShowRenameDialog) {
+        val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
+        currentState.copy(
+            dialogState = PresetSetEditDialogState.RenamePreset(
+                presetName = intent.presetName,
+                presetId = intent.presetId
+            )
+        ).setup()
+    }
+
+    @UiIntentObserver(PresetSetEditUiIntent.ConfirmRename::class)
+    suspend fun onConfirmRename(intent: PresetSetEditUiIntent.ConfirmRename) {
+        val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
+        currentState.copy(
+            dialogState = PresetSetEditDialogState.None
+        ).setup()
+
+        enqueueAsyncTask(Dispatchers.IO) {
+            val preset = currentState.presets.find { it.id == intent.presetId }
+            if (preset != null) {
+                _presetRepository.updatePreset(preset.copy(name = intent.newName))
+                PresetSetEditUiEffect.ShowToast(R.string.preset_renamed, listOf(intent.newName)).tryEmit()
+                loadPresets()
+            }
+        }
+    }
 }

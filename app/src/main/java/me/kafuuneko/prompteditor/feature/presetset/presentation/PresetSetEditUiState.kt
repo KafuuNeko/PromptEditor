@@ -25,4 +25,9 @@ sealed class PresetSetEditDialogState {
         val presetName: String,
         val presetId: Long
     ) : PresetSetEditDialogState()
+
+    data class RenamePreset(
+        val presetName: String,
+        val presetId: Long
+    ) : PresetSetEditDialogState()
 }

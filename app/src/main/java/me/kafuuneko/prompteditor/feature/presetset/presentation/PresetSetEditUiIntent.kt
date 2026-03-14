@@ -14,4 +14,7 @@ sealed class PresetSetEditUiIntent {
     data class OpenPreset(val id: Long) : PresetSetEditUiIntent()
     data class CopyPrompts(val prompts: String) : PresetSetEditUiIntent()
     data object Back : PresetSetEditUiIntent()
+
+    data class ShowRenameDialog(val presetId: Long, val presetName: String) : PresetSetEditUiIntent()
+    data class ConfirmRename(val presetId: Long, val newName: String) : PresetSetEditUiIntent()
 }

@@ -78,6 +78,28 @@ class MainViewModel :
         onDismissDialog()
     }
 
+    @UiIntentObserver(MainUiIntent.ShowRenamePresetSetDialog::class)
+    fun onShowRenamePresetSetDialog(intent: MainUiIntent.ShowRenamePresetSetDialog) {
+        getOrNull<MainUiState.Normal>()
+            ?.copy(dialogState = MainDialogState.RenamePresetSet(intent.id, intent.name))
+            ?.setup()
+    }
+
+    @UiIntentObserver(MainUiIntent.ConfirmRenamePresetSet::class)
+    suspend fun onConfirmRenamePresetSet(intent: MainUiIntent.ConfirmRenamePresetSet) {
+        val currentState = getOrNull<MainUiState.Normal>() ?: return
+
+        enqueueAsyncTask(Dispatchers.IO) {
+            val presetSet = currentState.presetSets.find { it.id == intent.id }
+            if (presetSet != null) {
+                _presetRepository.updatePresetSet(presetSet.copy(name = intent.newName))
+                MainUiEffect.ShowToast(R.string.preset_set_renamed, listOf(intent.newName)).tryEmit()
+                loadPresetSets()
+            }
+        }
+        onDismissDialog()
+    }
+
     @UiIntentObserver(MainUiIntent.OpenPresetSet::class)
     fun onOpenPresetSet(intent: MainUiIntent.OpenPresetSet) {
         val presetSet = getOrNull<MainUiState.Normal>()?.presetSets?.find { it.id == intent.id }

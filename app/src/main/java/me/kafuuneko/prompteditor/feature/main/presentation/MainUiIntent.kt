@@ -12,4 +12,7 @@ sealed class MainUiIntent {
     data object Back : MainUiIntent()
     data object DismissDialog : MainUiIntent()
     data object ConfirmExit : MainUiIntent()
+
+    data class ShowRenamePresetSetDialog(val id: Long, val name: String) : MainUiIntent()
+    data class ConfirmRenamePresetSet(val id: Long, val newName: String) : MainUiIntent()
 }

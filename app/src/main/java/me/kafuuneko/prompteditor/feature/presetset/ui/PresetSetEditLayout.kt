@@ -16,8 +16,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -27,6 +31,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -98,6 +106,19 @@ private fun DialogSwitch(
                 Text(stringResource(R.string.delete_preset_confirmation, dialogState.presetName))
             }
         }
+
+        is PresetSetEditDialogState.RenamePreset -> {
+            InputConfirmDialog(
+                title = stringResource(R.string.rename_preset),
+                hintText = stringResource(R.string.preset_name),
+                defaultText = dialogState.presetName,
+                onConfirmRequest = {
+                    emit(PresetSetEditUiIntent.ConfirmRename(dialogState.presetId, it))
+                    emit(PresetSetEditUiIntent.DismissDialog)
+                },
+                onDismissRequest = { emit(PresetSetEditUiIntent.DismissDialog) }
+            )
+        }
     }
 }
 
@@ -162,6 +183,14 @@ private fun NormalPresetSetEditLayout(
                                     preset.name
                                 )
                             )
+                        },
+                        onRename = {
+                            emit(
+                                PresetSetEditUiIntent.ShowRenameDialog(
+                                    preset.id,
+                                    preset.name
+                                )
+                            )
                         }
                     )
                 }
@@ -175,8 +204,11 @@ private fun PresetItem(
     preset: Preset,
     onClick: () -> Unit,
     onCopy: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onRename: () -> Unit
 ) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -202,19 +234,63 @@ private fun PresetItem(
                     )
                 }
             }
-            Row {
-                IconButton(onClick = onCopy) {
+            Box {
+                IconButton(onClick = { showMenu = true }) {
                     Icon(
-                        Icons.Default.ContentCopy,
-                        contentDescription = stringResource(R.string.copy),
-                        tint = MaterialTheme.colorScheme.primary
+                        Icons.Default.MoreVert,
+                        contentDescription = stringResource(R.string.more_options)
                     )
                 }
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        Icons.Default.Delete,
-                        contentDescription = stringResource(R.string.delete),
-                        tint = MaterialTheme.colorScheme.error
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.copy)) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.ContentCopy,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        onClick = {
+                            showMenu = false
+                            onCopy()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.rename)) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Edit,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        onClick = {
+                            showMenu = false
+                            onRename()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                stringResource(R.string.delete),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        onClick = {
+                            showMenu = false
+                            onDelete()
+                        }
                     )
                 }
             }
