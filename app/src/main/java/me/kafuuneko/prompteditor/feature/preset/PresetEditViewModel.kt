@@ -1,5 +1,6 @@
 package me.kafuuneko.prompteditor.feature.preset
 
+import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import me.kafuuneko.prompteditor.R
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditDialogState
@@ -7,6 +8,7 @@ import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditUiEffect
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditUiIntent
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditUiState
 import me.kafuuneko.prompteditor.feature.preset.presentation.PromptItem
+import me.kafuuneko.prompteditor.libs.core.AppUiEffect
 import me.kafuuneko.prompteditor.libs.core.CoreViewModelWithUiEffect
 import me.kafuuneko.prompteditor.libs.core.UiIntentObserver
 import me.kafuuneko.prompteditor.libs.room.entity.Tag
@@ -19,6 +21,7 @@ class PresetEditViewModel :
     CoreViewModelWithUiEffect<PresetEditUiIntent, PresetEditUiState>(PresetEditUiState.None),
     KoinComponent {
 
+    private val _context by inject<Context>()
     private val _presetRepository by inject<PresetRepository>()
 
     private var _currentPresetId: Long = 0L
@@ -58,7 +61,7 @@ class PresetEditViewModel :
                     dialogState = PresetEditDialogState.None
                 ).setup()
             } else {
-                PresetEditUiEffect.ShowToast(R.string.failed_to_load_preset).tryEmit()
+                AppUiEffect.PopupToastMessageByResId(R.string.failed_to_load_preset).tryEmit()
                 PresetEditUiEffect.NavigateBack.tryEmit()
             }
         }
@@ -220,7 +223,7 @@ class PresetEditViewModel :
                     promptsText = promptsText,
                     isSaved = true
                 ).setup()
-                PresetEditUiEffect.ShowToast(R.string.saved).tryEmit()
+                AppUiEffect.PopupToastMessageByResId(R.string.saved).tryEmit()
             }
         }
     }
@@ -266,7 +269,7 @@ class PresetEditViewModel :
                     promptItems = updatedItems,
                     isSaved = false
                 ).setup()
-                PresetEditUiEffect.ShowToast(R.string.tags_added).tryEmit()
+                AppUiEffect.PopupToastMessage(_context.getString(R.string.tags_added, newItems.size)).emit()
             }
         }
     }

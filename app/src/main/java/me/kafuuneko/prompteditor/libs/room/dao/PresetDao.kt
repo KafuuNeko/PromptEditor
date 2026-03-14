@@ -7,7 +7,7 @@ import me.kafuuneko.prompteditor.libs.room.entity.Preset
 
 @Dao
 interface PresetDao : MutableDao<Preset> {
-    @Query("SELECT * FROM preset WHERE presetSetId = :presetSetId ORDER BY id DESC")
+    @Query("SELECT * FROM preset WHERE presetSetId = :presetSetId ORDER BY `order` ASC")
     suspend fun getPresetsByPresetSetId(presetSetId: Long): List<Preset>
 
     @Query("SELECT * FROM preset WHERE id = :id")
@@ -18,4 +18,7 @@ interface PresetDao : MutableDao<Preset> {
 
     @Query("DELETE FROM preset WHERE presetSetId = :presetSetId")
     suspend fun deleteByPresetSetId(presetSetId: Long)
+
+    @Query("UPDATE preset SET `order` = :order WHERE id = :id")
+    suspend fun updateOrder(id: Long, order: Int)
 }

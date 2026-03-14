@@ -21,5 +21,6 @@ data class Preset(
     @PrimaryKey(autoGenerate = true) val id: Long = 0L,
     val presetSetId: Long,
     val name: String,
-    val prompts: String = ""
+    val prompts: String = "",
+    val order: Int = 0
 )

@@ -3,7 +3,6 @@ package me.kafuuneko.prompteditor.feature.preset
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
@@ -56,10 +55,6 @@ class PresetEditActivity : CoreActivityWithUiEffect() {
 
     override suspend fun onReceivedUiEffect(uiEffect: IUiEffect) {
         when (uiEffect) {
-            is PresetEditUiEffect.ShowToast -> {
-                Toast.makeText(this, uiEffect.messageResId, Toast.LENGTH_SHORT).show()
-            }
-
             is PresetEditUiEffect.NavigateBack -> {
                 finish()
             }

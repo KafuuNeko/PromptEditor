@@ -29,6 +29,8 @@
     <string name="preset_set_created">已创建预设集: %1$s</string>
     <string name="preset_set_deleted">已删除预设集</string>
     <string name="preset_set_name_hint">请输入预设集名称</string>
+    <string name="rename_preset_set">重命名预设集</string>
+    <string name="preset_set_renamed">预设集已重命名: %1$s</string>
 
     <!-- Preset Edit -->
     <string name="unsaved_changes">未保存的更改</string>
@@ -58,6 +60,17 @@
     <string name="preset_created">已创建预设: %1$s</string>
     <string name="preset_deleted">已删除预设</string>
     <string name="copied_to_clipboard">已复制到剪贴板</string>
+    <string name="rename">重命名</string>
+    <string name="rename_preset">重命名预设</string>
+    <string name="preset_renamed">预设已重命名: %1$s</string>
+    <string name="more_options">更多选项</string>
+    <string name="select">选择</string>
+    <string name="selected_presets_deleted">已删除选中的预设</string>
+    <string name="delete_selected_presets_confirmation">确定要删除选中的 %1$d 个预设吗？</string>
+    <string name="no_prompts_to_copy">没有可复制的提示词</string>
+    <string name="selected_count">已选择 %1$d 项</string>
+    <string name="select_all">全选</string>
+    <string name="deselect_all">取消全选</string>
 
     <!-- Tags Edit -->
     <string name="add_tag">添加Tag</string>

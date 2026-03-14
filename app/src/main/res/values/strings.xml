@@ -64,6 +64,13 @@
     <string name="rename_preset">Rename Preset</string>
     <string name="preset_renamed">Preset renamed: %1$s</string>
     <string name="more_options">More options</string>
+    <string name="select">Select</string>
+    <string name="selected_presets_deleted">Selected presets deleted</string>
+    <string name="delete_selected_presets_confirmation">Are you sure you want to delete %1$d selected presets?</string>
+    <string name="no_prompts_to_copy">No prompts to copy</string>
+    <string name="selected_count">%1$d selected</string>
+    <string name="select_all">Select All</string>
+    <string name="deselect_all">Deselect All</string>
 
     <!-- Tags Edit -->
     <string name="add_tag">Add Tag</string>

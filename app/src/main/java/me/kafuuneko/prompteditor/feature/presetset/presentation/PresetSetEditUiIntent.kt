@@ -17,4 +17,15 @@ sealed class PresetSetEditUiIntent {
 
     data class ShowRenameDialog(val presetId: Long, val presetName: String) : PresetSetEditUiIntent()
     data class ConfirmRename(val presetId: Long, val newName: String) : PresetSetEditUiIntent()
+
+    data class ReorderPresets(val fromIndex: Int, val toIndex: Int) : PresetSetEditUiIntent()
+
+
+    data class EnterMultiSelectMode(val presetId: Long) : PresetSetEditUiIntent()
+    data object ExitMultiSelectMode : PresetSetEditUiIntent()
+    data class TogglePresetSelection(val presetId: Long) : PresetSetEditUiIntent()
+    data object ShowDeleteMultipleConfirmDialog : PresetSetEditUiIntent()
+    data object ConfirmDeleteSelectedPresets : PresetSetEditUiIntent()
+    data object CopySelectedPresetsPrompts : PresetSetEditUiIntent()
+    data object SelectAllPresets : PresetSetEditUiIntent()
 }

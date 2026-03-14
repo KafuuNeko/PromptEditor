@@ -10,7 +10,9 @@ sealed class PresetSetEditUiState {
         val presetSetName: String = "",
         val presets: List<Preset> = emptyList(),
         val isLoading: Boolean = false,
-        val dialogState: PresetSetEditDialogState = PresetSetEditDialogState.None
+        val dialogState: PresetSetEditDialogState = PresetSetEditDialogState.None,
+        val isMultiSelectMode: Boolean = false,
+        val selectedPresetIds: Set<Long> = emptySet()
     ) : PresetSetEditUiState()
 
     data object Finished : PresetSetEditUiState()
@@ -24,6 +26,10 @@ sealed class PresetSetEditDialogState {
     data class DeleteConfirm(
         val presetName: String,
         val presetId: Long
+    ) : PresetSetEditDialogState()
+
+    data class DeleteMultipleConfirm(
+        val presetCount: Int
     ) : PresetSetEditDialogState()
 
     data class RenamePreset(

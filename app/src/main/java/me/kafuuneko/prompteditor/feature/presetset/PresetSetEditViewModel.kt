@@ -48,11 +48,13 @@ class PresetSetEditViewModel :
 
     @UiIntentObserver(PresetSetEditUiIntent.CreatePreset::class)
     suspend fun onCreatePreset(intent: PresetSetEditUiIntent.CreatePreset) {
+        val currentState = getOrNull<PresetSetEditUiState.Normal>()
         enqueueAsyncTask(Dispatchers.IO) {
             val newPreset = Preset(
                 presetSetId = _currentPresetSetId,
                 name = intent.name,
-                prompts = ""
+                prompts = "",
+                order = currentState?.presets?.size ?: 0
             )
             _presetRepository.insertPreset(newPreset)
             PresetSetEditUiEffect.ShowToast(R.string.preset_created, listOf(intent.name)).tryEmit()
@@ -81,6 +83,8 @@ class PresetSetEditViewModel :
     fun onShowDeleteConfirmDialog(intent: PresetSetEditUiIntent.ShowDeleteConfirmDialog) {
         val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
         currentState.copy(
+            isMultiSelectMode = false,
+            selectedPresetIds = emptySet(),
             dialogState = PresetSetEditDialogState.DeleteConfirm(
                 presetName = intent.presetName,
                 presetId = intent.presetId
@@ -123,13 +127,20 @@ class PresetSetEditViewModel :
 
     @UiIntentObserver(PresetSetEditUiIntent.Back::class)
     fun onBack() {
-        PresetSetEditUiEffect.NavigateBack.tryEmit()
+        val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
+        if (currentState.isMultiSelectMode) {
+            currentState.copy(isMultiSelectMode = false, selectedPresetIds = emptySet()).setup()
+        } else {
+            PresetSetEditUiEffect.NavigateBack.tryEmit()
+        }
     }
 
     @UiIntentObserver(PresetSetEditUiIntent.ShowRenameDialog::class)
     fun onShowRenameDialog(intent: PresetSetEditUiIntent.ShowRenameDialog) {
         val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
         currentState.copy(
+            isMultiSelectMode = false,
+            selectedPresetIds = emptySet(),
             dialogState = PresetSetEditDialogState.RenamePreset(
                 presetName = intent.presetName,
                 presetId = intent.presetId
@@ -152,5 +163,140 @@ class PresetSetEditViewModel :
                 loadPresets()
             }
         }
+    }
+
+    @UiIntentObserver(PresetSetEditUiIntent.ReorderPresets::class)
+    suspend fun onReorderPresets(intent: PresetSetEditUiIntent.ReorderPresets) {
+        val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
+        if (currentState.isMultiSelectMode) return
+
+        val updatedPresets = currentState.presets.toMutableList()
+        if (intent.fromIndex in updatedPresets.indices && intent.toIndex in updatedPresets.indices) {
+            val item = updatedPresets.removeAt(intent.fromIndex)
+            updatedPresets.add(intent.toIndex, item)
+
+            val updatedPresetsWithOrder = updatedPresets.mapIndexed { index, preset ->
+                preset.copy(order = index)
+            }
+
+            currentState.copy(presets = updatedPresetsWithOrder).setup()
+
+            enqueueAsyncTask(Dispatchers.IO) {
+                updatedPresetsWithOrder.forEach { preset ->
+                    _presetRepository.updatePresetOrder(preset.id, preset.order)
+                }
+            }
+        }
+    }
+
+    @UiIntentObserver(PresetSetEditUiIntent.EnterMultiSelectMode::class)
+    fun onEnterMultiSelectMode(intent: PresetSetEditUiIntent.EnterMultiSelectMode) {
+        val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
+        currentState.copy(
+            isMultiSelectMode = true,
+            selectedPresetIds = setOf(intent.presetId)
+        ).setup()
+    }
+
+    @UiIntentObserver(PresetSetEditUiIntent.ExitMultiSelectMode::class)
+    fun onExitMultiSelectMode() {
+        val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
+        currentState.copy(
+            isMultiSelectMode = false,
+            selectedPresetIds = emptySet()
+        ).setup()
+    }
+
+    @UiIntentObserver(PresetSetEditUiIntent.TogglePresetSelection::class)
+    fun onTogglePresetSelection(intent: PresetSetEditUiIntent.TogglePresetSelection) {
+        val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
+        if (!currentState.isMultiSelectMode) return
+
+        val newSelectedIds = currentState.selectedPresetIds.toMutableSet()
+        if (intent.presetId in newSelectedIds) {
+            newSelectedIds.remove(intent.presetId)
+        } else {
+            newSelectedIds.add(intent.presetId)
+        }
+
+        // If no items selected, exit multi-select mode
+        if (newSelectedIds.isEmpty()) {
+            currentState.copy(
+                isMultiSelectMode = false,
+                selectedPresetIds = emptySet()
+            ).setup()
+        } else {
+            currentState.copy(selectedPresetIds = newSelectedIds).setup()
+        }
+    }
+
+    @UiIntentObserver(PresetSetEditUiIntent.ShowDeleteMultipleConfirmDialog::class)
+    fun onShowDeleteMultipleConfirmDialog() {
+        val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
+        val selectedCount = currentState.selectedPresetIds.size
+        if (selectedCount == 0) return
+        currentState.copy(
+            dialogState = PresetSetEditDialogState.DeleteMultipleConfirm(selectedCount)
+        ).setup()
+    }
+
+    @UiIntentObserver(PresetSetEditUiIntent.ConfirmDeleteSelectedPresets::class)
+    suspend fun onConfirmDeleteSelectedPresets() {
+        val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
+        val selectedIds = currentState.selectedPresetIds.toList()
+
+        if (selectedIds.isEmpty()) return
+
+        currentState.copy(
+            isMultiSelectMode = false,
+            selectedPresetIds = emptySet(),
+            dialogState = PresetSetEditDialogState.None
+        ).setup()
+
+        enqueueAsyncTask(Dispatchers.IO) {
+            selectedIds.forEach { id ->
+                _presetRepository.deletePreset(id)
+            }
+            PresetSetEditUiEffect.ShowToast(R.string.selected_presets_deleted).tryEmit()
+            loadPresets()
+        }
+    }
+
+    @UiIntentObserver(PresetSetEditUiIntent.CopySelectedPresetsPrompts::class)
+    fun onCopySelectedPresetsPrompts() {
+        val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
+        val selectedIds = currentState.selectedPresetIds
+
+        if (selectedIds.isEmpty()) return
+
+        val promptsList = mutableListOf<String>()
+        currentState.presets
+            .filter { it.id in selectedIds }
+            .forEach { preset ->
+                if (preset.prompts.isNotEmpty()) {
+                    promptsList.add(preset.prompts)
+                }
+            }
+
+        if (promptsList.isEmpty()) {
+            PresetSetEditUiEffect.ShowToast(R.string.no_prompts_to_copy).tryEmit()
+            return
+        }
+
+        val combinedPrompts = promptsList.joinToString(",") { it.trim() }
+            .replace(",,", ",")
+            .trim(',')
+
+        PresetSetEditUiEffect.CopyToClipboard(combinedPrompts).tryEmit()
+        PresetSetEditUiEffect.ShowToast(R.string.copied_to_clipboard).tryEmit()
+    }
+
+    @UiIntentObserver(PresetSetEditUiIntent.SelectAllPresets::class)
+    fun onSelectAllPresets() {
+        val currentState = getOrNull<PresetSetEditUiState.Normal>() ?: return
+        if (!currentState.isMultiSelectMode) return
+
+        val allIds = currentState.presets.map { it.id }.toSet()
+        currentState.copy(selectedPresetIds = allIds).setup()
     }
 }

@@ -35,6 +35,8 @@ class PresetRepository(private val _appDatabase: AppDatabase) {
 
     suspend fun deletePreset(id: Long) = _presetDao.deleteById(id)
 
+    suspend fun updatePresetOrder(id: Long, order: Int) = _presetDao.updateOrder(id, order)
+
     // ==================== Tag Operations ====================
 
     suspend fun getAllTags(): List<Tag> = _tagDao.getAllTags()

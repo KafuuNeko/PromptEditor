@@ -29,6 +29,8 @@
     <string name="preset_set_created">Набор пресетов создан: %1$s</string>
     <string name="preset_set_deleted">Набор пресетов удалён</string>
     <string name="preset_set_name_hint">Введите название набора пресетов</string>
+    <string name="rename_preset_set">Переименовать набор пресетов</string>
+    <string name="preset_set_renamed">Набор пресетов переименован: %1$s</string>
 
     <!-- Preset Edit -->
     <string name="unsaved_changes">Несохранённые изменения</string>
@@ -58,6 +60,17 @@
     <string name="preset_created">Пресет создан: %1$s</string>
     <string name="preset_deleted">Пресет удалён</string>
     <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
+    <string name="rename">Переименовать</string>
+    <string name="rename_preset">Переименовать пресет</string>
+    <string name="preset_renamed">Пресет переименован: %1$s</string>
+    <string name="more_options">Дополнительные параметры</string>
+    <string name="select">Выбрать</string>
+    <string name="selected_presets_deleted">Выбранные пресеты удалены</string>
+    <string name="delete_selected_presets_confirmation">Вы уверены, что хотите удалить %1$d выбранных пресетов?</string>
+    <string name="no_prompts_to_copy">Нет промптов для копирования</string>
+    <string name="selected_count">Выбрано: %1$d</string>
+    <string name="select_all">Выбрать все</string>
+    <string name="deselect_all">Снять выделение</string>
 
     <!-- Tags Edit -->
     <string name="add_tag">Добавить тег</string>

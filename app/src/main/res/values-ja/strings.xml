@@ -29,6 +29,8 @@
     <string name="preset_set_created">プリセットセットを作成しました: %1$s</string>
     <string name="preset_set_deleted">プリセットセットを削除しました</string>
     <string name="preset_set_name_hint">プリセットセット名を入力</string>
+    <string name="rename_preset_set">プリセットセットの名前を変更</string>
+    <string name="preset_set_renamed">プリセットセット名を変更しました: %1$s</string>
 
     <!-- Preset Edit -->
     <string name="unsaved_changes">未保存の変更</string>
@@ -58,6 +60,17 @@
     <string name="preset_created">プリセットを作成しました: %1$s</string>
     <string name="preset_deleted">プリセットを削除しました</string>
     <string name="copied_to_clipboard">クリップボードにコピーしました</string>
+    <string name="rename">名前を変更</string>
+    <string name="rename_preset">プリセットの名前を変更</string>
+    <string name="preset_renamed">プリセット名を変更しました: %1$s</string>
+    <string name="more_options">その他のオプション</string>
+    <string name="select">選択</string>
+    <string name="selected_presets_deleted">選択したプリセットを削除しました</string>
+    <string name="delete_selected_presets_confirmation">選択した%1$d個のプリセットを削除しますか？</string>
+    <string name="no_prompts_to_copy">コピーするプロンプトがありません</string>
+    <string name="selected_count">%1$d件選択中</string>
+    <string name="select_all">すべて選択</string>
+    <string name="deselect_all">選択解除</string>
 
     <!-- Tags Edit -->
     <string name="add_tag">Tagを追加</string>
