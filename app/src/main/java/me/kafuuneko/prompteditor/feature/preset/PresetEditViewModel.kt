@@ -11,11 +11,10 @@ import me.kafuuneko.prompteditor.feature.preset.presentation.PromptItem
 import me.kafuuneko.prompteditor.libs.core.AppUiEffect
 import me.kafuuneko.prompteditor.libs.core.CoreViewModelWithUiEffect
 import me.kafuuneko.prompteditor.libs.core.UiIntentObserver
-import me.kafuuneko.prompteditor.libs.room.entity.Tag
 import me.kafuuneko.prompteditor.libs.room.repository.PresetRepository
+import me.kafuuneko.prompteditor.libs.utils.PromptParser
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.util.regex.Pattern
 
 class PresetEditViewModel :
     CoreViewModelWithUiEffect<PresetEditUiIntent, PresetEditUiState>(PresetEditUiState.None),
@@ -25,28 +24,6 @@ class PresetEditViewModel :
     private val _presetRepository by inject<PresetRepository>()
 
     private var _currentPresetId: Long = 0L
-
-    companion object {
-        // 匹配格式:
-        // 单层: {tag}, {tag:weight}, [tag], [tag:weight]
-        // 多层: {{tag}}, {{tag:weight}}, [[tag]], [[tag:weight]]
-        private val WEIGHT_PATTERN = Pattern.compile(
-            "^" +
-            // 多层大括号: {{tag}} 或 {{tag:weight}}
-            "(\\{{2,})([^:}]+)(?::([^}]+))?(\\}{2,})" +
-            "|" +
-            // 多层中括号: [[tag]] 或 [[tag:weight]]
-            "(\\[{2,})([^:\\]]+)(?::([^]]+))?(]{2,})" +
-            "|" +
-            // 单层大括号: {tag} 或 {tag:weight}
-            "(\\{)([^:}]+)(?::([^}]+))?(\\})" +
-            "|" +
-            // 单层中括号: [tag] 或 [tag:weight]
-            "(\\[)([^:\\]]+)(?::([^]]+))?(])" +
-            "$"
-        )
-        private val TAG_SPLITTER = Pattern.compile(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
-    }
 
     @UiIntentObserver(PresetEditUiIntent.CreatePage::class)
     suspend fun onCreatePage(intent: PresetEditUiIntent.CreatePage) {
@@ -64,7 +41,7 @@ class PresetEditViewModel :
             val preset = _presetRepository.getPresetById(_currentPresetId)
             if (preset != null) {
                 val allTags = _presetRepository.getAllTags()
-                val promptItems = parsePromptsToItems(preset.prompts, allTags)
+                val promptItems = PromptParser.parsePromptsToItems(preset.prompts, allTags)
                 PresetEditUiState.Normal(
                     presetId = preset.id,
                     presetName = preset.name,
@@ -98,7 +75,7 @@ class PresetEditViewModel :
         if (intent.index in updatedItems.indices) {
             updatedItems[intent.index] = updatedItems[intent.index].copy(
                 originalText = intent.newTag,
-                tagName = extractTagName(intent.newTag)
+                tagName = PromptParser.extractTagName(intent.newTag)
             )
             currentState.copy(
                 promptItems = updatedItems,
@@ -116,7 +93,7 @@ class PresetEditViewModel :
             enqueueAsyncTask(Dispatchers.IO) {
                 val allTags = _presetRepository.getAllTags()
                 val tagMap = allTags.associateBy { it.name.lowercase() }
-                val newTagName = extractTagName(intent.newTag)
+                val newTagName = PromptParser.extractTagName(intent.newTag)
                 val newDescription = tagMap[newTagName.lowercase()]?.description ?: ""
 
                 updatedItems[intent.index] = updatedItems[intent.index].copy(
@@ -199,7 +176,7 @@ class PresetEditViewModel :
 
         if (intent.isTextMode) {
             // 切换到文本模式，将items转换为文本
-            val text = convertItemsToText(currentState.promptItems)
+            val text = PromptParser.convertItemsToText(currentState.promptItems)
             currentState.copy(
                 isTextMode = true,
                 promptsText = text,
@@ -209,7 +186,7 @@ class PresetEditViewModel :
             // 切换到列表模式，解析文本为items
             enqueueAsyncTask(Dispatchers.IO) {
                 val allTags = _presetRepository.getAllTags()
-                val promptItems = parsePromptsToItems(currentState.promptsText, allTags)
+                val promptItems = PromptParser.parsePromptsToItems(currentState.promptsText, allTags)
                 currentState.copy(
                     isTextMode = false,
                     promptItems = promptItems,
@@ -227,7 +204,7 @@ class PresetEditViewModel :
             val promptsText = if (currentState.isTextMode) {
                 currentState.promptsText
             } else {
-                convertItemsToText(currentState.promptItems)
+                PromptParser.convertItemsToText(currentState.promptItems)
             }
 
             val preset = _presetRepository.getPresetById(_currentPresetId)
@@ -312,59 +289,5 @@ class PresetEditViewModel :
     @UiIntentObserver(PresetEditUiIntent.ConfirmDiscardChanges::class)
     fun onConfirmDiscardChanges() {
         PresetEditUiEffect.NavigateBack.tryEmit()
-    }
-
-    private fun parsePromptsToItems(prompts: String, allTags: List<Tag>): List<PromptItem> {
-        if (prompts.isBlank()) return emptyList()
-
-        val items = mutableListOf<PromptItem>()
-        val tags = TAG_SPLITTER.split(prompts.trim())
-        val tagMap = allTags.associateBy { it.name.lowercase() }
-
-        for (tag in tags) {
-            val trimmed = tag.trim()
-            if (trimmed.isEmpty()) continue
-
-            val (tagName, weight) = extractTagAndWeight(trimmed)
-            val tagDescription = tagMap[tagName.lowercase()]?.description ?: ""
-
-            items.add(
-                PromptItem(
-                    originalText = trimmed,
-                    tagName = tagName,
-                    weight = weight,
-                    description = tagDescription
-                )
-            )
-        }
-
-        return items
-    }
-
-    private fun extractTagAndWeight(text: String): Pair<String, String> {
-        val matcher = WEIGHT_PATTERN.matcher(text)
-        return if (matcher.matches()) {
-            // Groups: 1-4 (multi {}), 5-8 (multi []), 9-12 (single {}), 13-16 (single [])
-            val tagName = matcher.group(2) ?: matcher.group(6) ?: matcher.group(10) ?: matcher.group(14) ?: text
-            val weight = matcher.group(3) ?: matcher.group(7) ?: matcher.group(11) ?: matcher.group(15) ?: ""
-            tagName to weight
-        } else {
-            text to ""
-        }
-    }
-
-    private fun extractTagName(text: String): String {
-        val (tagName, _) = extractTagAndWeight(text)
-        return tagName
-    }
-
-    private fun convertItemsToText(items: List<PromptItem>): String {
-        return items.joinToString(", ") { item ->
-            if (item.weight.isNotEmpty()) {
-                "{${item.tagName}:${item.weight}}"
-            } else {
-                item.tagName
-            }
-        }
     }
 }

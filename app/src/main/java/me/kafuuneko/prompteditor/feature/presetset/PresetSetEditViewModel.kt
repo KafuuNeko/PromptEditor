@@ -10,6 +10,7 @@ import me.kafuuneko.prompteditor.libs.core.CoreViewModelWithUiEffect
 import me.kafuuneko.prompteditor.libs.core.UiIntentObserver
 import me.kafuuneko.prompteditor.libs.room.entity.Preset
 import me.kafuuneko.prompteditor.libs.room.repository.PresetRepository
+import me.kafuuneko.prompteditor.libs.utils.PromptCombiner
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -269,23 +270,12 @@ class PresetSetEditViewModel :
 
         if (selectedIds.isEmpty()) return
 
-        val promptsList = mutableListOf<String>()
-        currentState.presets
-            .filter { it.id in selectedIds }
-            .forEach { preset ->
-                if (preset.prompts.isNotEmpty()) {
-                    promptsList.add(preset.prompts)
-                }
-            }
+        val combinedPrompts = PromptCombiner.combinePrompts(currentState.presets, selectedIds)
 
-        if (promptsList.isEmpty()) {
+        if (combinedPrompts == null) {
             PresetSetEditUiEffect.ShowToast(R.string.no_prompts_to_copy).tryEmit()
             return
         }
-
-        val combinedPrompts = promptsList.joinToString(",") { it.trim() }
-            .replace(",,", ",")
-            .trim(',')
 
         PresetSetEditUiEffect.CopyToClipboard(combinedPrompts).tryEmit()
         PresetSetEditUiEffect.ShowToast(R.string.copied_to_clipboard).tryEmit()

@@ -11,6 +11,8 @@ import me.kafuuneko.prompteditor.libs.core.CoreViewModelWithUiEffect
 import me.kafuuneko.prompteditor.libs.core.UiIntentObserver
 import me.kafuuneko.prompteditor.libs.room.entity.Tag
 import me.kafuuneko.prompteditor.libs.room.repository.PresetRepository
+import me.kafuuneko.prompteditor.libs.utils.CsvParser
+import me.kafuuneko.prompteditor.libs.utils.TextSearcher
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -43,86 +45,24 @@ class TagsEditViewModel :
         }
     }
 
-    private fun filterTags(tags: List<Tag>, query: String): List<Tag> {
-        return if (query.isEmpty()) {
-            tags
-        } else {
-            val lowerQuery = query.lowercase()
-            tags.filter {
-                it.name.lowercase().contains(lowerQuery) ||
-                        it.description.lowercase().contains(lowerQuery)
-            }
-        }
-    }
-
     @UiIntentObserver(TagsEditUiIntent.ImportFromCsv::class)
     suspend fun onImportFromCsv(intent: TagsEditUiIntent.ImportFromCsv) {
         enqueueAsyncTask(Dispatchers.IO) {
-            val csvContent = intent.csvContent
-            val lines = csvContent.lines().filter { it.isNotBlank() }
-
-            var successCount = 0
-            var failCount = 0
-            var updateCount = 0
-            val tagsToInsert = mutableListOf<Tag>()
-            val tagsToUpdate = mutableListOf<Tag>()
-
-            // 获取所有已存在的 Tag
             val existingTags = _presetRepository.getAllTags()
-            val existingTagsMap = existingTags.associateBy { it.name.lowercase() }
 
-            for (line in lines) {
-                try {
-                    val parts = line.split(",", limit = 2)
-                    if (parts.isNotEmpty()) {
-                        val tagName = parts[0].trim().removeSurrounding("\"")
-                        val description =
-                            if (parts.size > 1) parts[1].trim().removeSurrounding("\"") else ""
-                        if (tagName.isNotEmpty()) {
-                            val existingTag = existingTagsMap[tagName.lowercase()]
-                            if (existingTag != null) {
-                                // 存在同名 Tag，执行覆盖更新
-                                tagsToUpdate.add(existingTag.copy(description = description))
-                                updateCount++
-                            } else {
-                                // 不存在，插入新 Tag
-                                tagsToInsert.add(Tag(name = tagName, description = description))
-                            }
-                            successCount++
-                        } else {
-                            failCount++
-                        }
-                    } else {
-                        failCount++
-                    }
-                } catch (e: Exception) {
-                    failCount++
-                }
+            val result = CsvParser.processTagImport(
+                csvContent = intent.csvContent,
+                existingTags = existingTags
+            ) { tags ->
+                _presetRepository.insertTags(tags)
             }
-
-            // 批量插入新 Tags
-            if (tagsToInsert.isNotEmpty()) {
-                _presetRepository.insertTags(tagsToInsert)
-            }
-
-            // 批量更新已存在的 Tags（使用 insertOrReplace）
-            if (tagsToUpdate.isNotEmpty()) {
-                _presetRepository.insertTags(tagsToUpdate)
-            }
-
-            val result = ImportResult(
-                successCount = successCount,
-                updateCount = updateCount,
-                failCount = failCount,
-                totalCount = lines.size
-            )
 
             val currentState = getOrNull<TagsEditUiState.Normal>()
             val allTags = _presetRepository.getAllTags()
             if (currentState != null) {
                 currentState.copy(
                     tags = allTags,
-                    filteredTags = filterTags(allTags, currentState.searchQuery),
+                    filteredTags = TextSearcher.filterTags(allTags, currentState.searchQuery),
                     isLoading = false,
                     importResult = result,
                     dialogState = TagsEditDialogState.None
@@ -139,7 +79,7 @@ class TagsEditViewModel :
             }
             TagsEditUiEffect.ShowToast(
                 R.string.import_complete,
-                listOf(tagsToInsert.size + updateCount, failCount)
+                listOf(result.successCount, result.failCount)
             ).tryEmit()
         }
     }
@@ -155,7 +95,7 @@ class TagsEditViewModel :
             currentState.copy(
                 dialogState = TagsEditDialogState.None,
                 tags = allTags,
-                filteredTags = filterTags(allTags, currentState.searchQuery)
+                filteredTags = TextSearcher.filterTags(allTags, currentState.searchQuery)
             ).setup()
         }
     }
@@ -178,7 +118,7 @@ class TagsEditViewModel :
             currentState.copy(
                 dialogState = TagsEditDialogState.None,
                 tags = allTags,
-                filteredTags = filterTags(allTags, currentState.searchQuery)
+                filteredTags = TextSearcher.filterTags(allTags, currentState.searchQuery)
             ).setup()
         }
     }
@@ -194,7 +134,7 @@ class TagsEditViewModel :
             currentState.copy(
                 dialogState = TagsEditDialogState.None,
                 tags = allTags,
-                filteredTags = filterTags(allTags, currentState.searchQuery)
+                filteredTags = TextSearcher.filterTags(allTags, currentState.searchQuery)
             ).setup()
         }
     }

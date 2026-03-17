@@ -7,6 +7,7 @@ import me.kafuuneko.prompteditor.feature.tagssearch.presentation.TagsSearchUiSta
 import me.kafuuneko.prompteditor.libs.core.CoreViewModelWithUiEffect
 import me.kafuuneko.prompteditor.libs.core.UiIntentObserver
 import me.kafuuneko.prompteditor.libs.room.repository.PresetRepository
+import me.kafuuneko.prompteditor.libs.utils.TextSearcher
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -37,17 +38,7 @@ class TagsSearchViewModel :
     @UiIntentObserver(TagsSearchUiIntent.SearchTags::class)
     fun onSearchTags(intent: TagsSearchUiIntent.SearchTags) {
         val currentState = getOrNull<TagsSearchUiState.Normal>() ?: return
-        val query = intent.query.lowercase()
-
-        val filteredTags = if (query.isEmpty()) {
-            currentState.allTags
-        } else {
-            // 同时匹配名称和描述
-            currentState.allTags.filter {
-                it.name.lowercase().contains(query) ||
-                        it.description.lowercase().contains(query)
-            }
-        }
+        val filteredTags = TextSearcher.filterTags(currentState.allTags, intent.query)
 
         currentState.copy(
             filteredTags = filteredTags,
