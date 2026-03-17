@@ -7,6 +7,8 @@ sealed class TagsEditUiState {
 
     data class Normal(
         val tags: List<Tag> = emptyList(),
+        val filteredTags: List<Tag> = emptyList(),
+        val searchQuery: String = "",
         val isLoading: Boolean = false,
         val importResult: ImportResult? = null,
         val dialogState: TagsEditDialogState = TagsEditDialogState.None

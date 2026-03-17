@@ -79,6 +79,7 @@
     <string name="clear_all_tags_confirmation">确定要清空所有Tags吗？此操作不可恢复。</string>
     <string name="tags_editor">Tags编辑器</string>
     <string name="no_tags_import_or_add">暂无Tags，请导入CSV或添加</string>
+    <string name="no_tags_found">未找到匹配的Tags</string>
     <string name="tag_name">Tag名称</string>
     <string name="tag_description">Tag描述</string>
     <string name="tag_added">已添加Tag: %1$s</string>
@@ -103,6 +104,7 @@
     <string name="search_tags_placeholder">搜索Tags...</string>
     <string name="tags_selected">已选择: %1$d个Tags</string>
     <string name="confirm_selection">确认</string>
+    <string name="edit_tags">编辑Tags</string>
 
     <!-- Confirm Dialog -->
     <string name="confirm_delete">确认删除</string>

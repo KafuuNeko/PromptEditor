@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -80,6 +81,12 @@ private fun NormalTagsSearchLayout(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { onIntent(TagsSearchUiIntent.OpenTagsEdit) }) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = stringResource(R.string.edit_tags)
+                        )
+                    }
                     IconButton(onClick = { onIntent(TagsSearchUiIntent.ConfirmSelection) }) {
                         Icon(
                             imageVector = Icons.Default.Check,

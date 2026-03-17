@@ -17,9 +17,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -147,10 +149,35 @@ private fun NormalTagsEditLayout(
     emit: TagsEditUiIntent.() -> Unit,
     onImportClick: () -> Unit
 ) {
+    var showSearch by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.tags_editor)) },
+                title = {
+                    if (showSearch) {
+                        OutlinedTextField(
+                            value = uiState.searchQuery,
+                            onValueChange = { emit(TagsEditUiIntent.SearchTags(it)) },
+                            placeholder = { Text(stringResource(R.string.search_tags_placeholder)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    showSearch = false
+                                    emit(TagsEditUiIntent.SearchTags(""))
+                                }) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = stringResource(R.string.cancel)
+                                    )
+                                }
+                            }
+                        )
+                    } else {
+                        Text(stringResource(R.string.tags_editor))
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { emit(TagsEditUiIntent.Back) }) {
                         Icon(
@@ -160,6 +187,14 @@ private fun NormalTagsEditLayout(
                     }
                 },
                 actions = {
+                    if (!showSearch) {
+                        IconButton(onClick = { showSearch = true }) {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = stringResource(R.string.search)
+                            )
+                        }
+                    }
                     IconButton(onClick = { emit(TagsEditUiIntent.ShowClearConfirmDialog) }) {
                         Icon(
                             Icons.Default.Delete,
@@ -202,13 +237,17 @@ private fun NormalTagsEditLayout(
             }
 
             // Tags列表
-            if (uiState.tags.isEmpty()) {
+            if (uiState.filteredTags.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = stringResource(R.string.no_tags_import_or_add),
+                        text = if (uiState.searchQuery.isNotEmpty()) {
+                            stringResource(R.string.no_tags_found)
+                        } else {
+                            stringResource(R.string.no_tags_import_or_add)
+                        },
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -219,7 +258,7 @@ private fun NormalTagsEditLayout(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(uiState.tags, key = { it.id }) { tag ->
+                    items(uiState.filteredTags, key = { it.id }) { tag ->
                         TagItem(
                             tag = tag,
                             onEdit = {

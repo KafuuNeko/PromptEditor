@@ -35,9 +35,23 @@ class TagsEditViewModel :
             val tags = _presetRepository.getAllTags()
             TagsEditUiState.Normal(
                 tags = tags,
+                filteredTags = tags,
+                searchQuery = "",
                 isLoading = false,
                 dialogState = TagsEditDialogState.None
             ).setup()
+        }
+    }
+
+    private fun filterTags(tags: List<Tag>, query: String): List<Tag> {
+        return if (query.isEmpty()) {
+            tags
+        } else {
+            val lowerQuery = query.lowercase()
+            tags.filter {
+                it.name.lowercase().contains(lowerQuery) ||
+                        it.description.lowercase().contains(lowerQuery)
+            }
         }
     }
 
@@ -104,16 +118,20 @@ class TagsEditViewModel :
             )
 
             val currentState = getOrNull<TagsEditUiState.Normal>()
+            val allTags = _presetRepository.getAllTags()
             if (currentState != null) {
                 currentState.copy(
-                    tags = _presetRepository.getAllTags(),
+                    tags = allTags,
+                    filteredTags = filterTags(allTags, currentState.searchQuery),
                     isLoading = false,
                     importResult = result,
                     dialogState = TagsEditDialogState.None
                 ).setup()
             } else {
                 TagsEditUiState.Normal(
-                    tags = _presetRepository.getAllTags(),
+                    tags = allTags,
+                    filteredTags = allTags,
+                    searchQuery = "",
                     isLoading = false,
                     importResult = result,
                     dialogState = TagsEditDialogState.None
@@ -132,12 +150,13 @@ class TagsEditViewModel :
             val newTag = Tag(name = intent.name, description = intent.description)
             _presetRepository.insertTag(newTag)
             TagsEditUiEffect.ShowToast(R.string.tag_added, listOf(intent.name)).tryEmit()
-            getOrNull<TagsEditUiState.Normal>()
-                ?.copy(
-                    dialogState = TagsEditDialogState.None,
-                    tags = _presetRepository.getAllTags()
-                )
-                ?.setup()
+            val currentState = getOrNull<TagsEditUiState.Normal>() ?: return@enqueueAsyncTask
+            val allTags = _presetRepository.getAllTags()
+            currentState.copy(
+                dialogState = TagsEditDialogState.None,
+                tags = allTags,
+                filteredTags = filterTags(allTags, currentState.searchQuery)
+            ).setup()
         }
     }
 
@@ -154,12 +173,13 @@ class TagsEditViewModel :
                 TagsEditUiEffect.ShowToast(R.string.tag_updated).tryEmit()
             }
 
-            getOrNull<TagsEditUiState.Normal>()
-                ?.copy(
-                    dialogState = TagsEditDialogState.None,
-                    tags = _presetRepository.getAllTags()
-                )
-                ?.setup()
+            val currentState = getOrNull<TagsEditUiState.Normal>() ?: return@enqueueAsyncTask
+            val allTags = _presetRepository.getAllTags()
+            currentState.copy(
+                dialogState = TagsEditDialogState.None,
+                tags = allTags,
+                filteredTags = filterTags(allTags, currentState.searchQuery)
+            ).setup()
         }
     }
 
@@ -169,13 +189,13 @@ class TagsEditViewModel :
             _presetRepository.deleteTagById(intent.id)
             TagsEditUiEffect.ShowToast(R.string.tag_deleted).tryEmit()
 
-            val currentState = getOrNull<TagsEditUiState.Normal>()
-            if (currentState != null) {
-                currentState.copy(
-                    dialogState = TagsEditDialogState.None,
-                    tags = _presetRepository.getAllTags()
-                ).setup()
-            }
+            val currentState = getOrNull<TagsEditUiState.Normal>() ?: return@enqueueAsyncTask
+            val allTags = _presetRepository.getAllTags()
+            currentState.copy(
+                dialogState = TagsEditDialogState.None,
+                tags = allTags,
+                filteredTags = filterTags(allTags, currentState.searchQuery)
+            ).setup()
         }
     }
 
@@ -183,13 +203,13 @@ class TagsEditViewModel :
     suspend fun onClearAllTags() {
         enqueueAsyncTask(Dispatchers.IO) {
             _presetRepository.deleteAllTags()
-            val currentState = getOrNull<TagsEditUiState.Normal>()
-            if (currentState != null) {
-                currentState.copy(
-                    tags = emptyList(),
-                    isLoading = false
-                ).setup()
-            }
+            val currentState = getOrNull<TagsEditUiState.Normal>() ?: return@enqueueAsyncTask
+            currentState.copy(
+                tags = emptyList(),
+                filteredTags = emptyList(),
+                searchQuery = "",
+                isLoading = false
+            ).setup()
             TagsEditUiEffect.ShowToast(R.string.all_tags_cleared).tryEmit()
         }
     }
@@ -247,6 +267,26 @@ class TagsEditViewModel :
         val currentState = getOrNull<TagsEditUiState.Normal>() ?: return
         currentState.copy(
             dialogState = TagsEditDialogState.None
+        ).setup()
+    }
+
+    @UiIntentObserver(TagsEditUiIntent.SearchTags::class)
+    fun onSearchTags(intent: TagsEditUiIntent.SearchTags) {
+        val currentState = getOrNull<TagsEditUiState.Normal>() ?: return
+        val query = intent.query.lowercase()
+
+        val filteredTags = if (query.isEmpty()) {
+            currentState.tags
+        } else {
+            currentState.tags.filter {
+                it.name.lowercase().contains(query) ||
+                        it.description.lowercase().contains(query)
+            }
+        }
+
+        currentState.copy(
+            filteredTags = filteredTags,
+            searchQuery = intent.query
         ).setup()
     }
 

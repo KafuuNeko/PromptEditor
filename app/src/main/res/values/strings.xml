@@ -79,6 +79,7 @@
     <string name="clear_all_tags_confirmation">Are you sure you want to clear all tags? This action cannot be undone.</string>
     <string name="tags_editor">Tags Editor</string>
     <string name="no_tags_import_or_add">No tags, import CSV or add new ones</string>
+    <string name="no_tags_found">No matching tags found</string>
     <string name="tag_name">Tag Name</string>
     <string name="tag_description">Tag Description</string>
     <string name="tag_added">Tag added: %1$s</string>
@@ -103,6 +104,7 @@
     <string name="search_tags_placeholder">Search Tags…</string>
     <string name="tags_selected">%1$d tags selected</string>
     <string name="confirm_selection">Confirm</string>
+    <string name="edit_tags">Edit Tags</string>
 
     <!-- Confirm Dialog -->
     <string name="confirm_delete">Confirm Delete</string>

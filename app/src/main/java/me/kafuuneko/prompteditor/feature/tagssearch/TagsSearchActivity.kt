@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import me.kafuuneko.prompteditor.feature.tagsedit.TagsEditActivity
 import me.kafuuneko.prompteditor.feature.tagssearch.presentation.TagsSearchUiEffect
 import me.kafuuneko.prompteditor.feature.tagssearch.presentation.TagsSearchUiIntent
 import me.kafuuneko.prompteditor.feature.tagssearch.ui.TagsSearchLayout
@@ -54,6 +55,11 @@ class TagsSearchActivity : CoreActivityWithUiEffect() {
         })
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.emit(TagsSearchUiIntent.CreatePage)
+    }
+
     override suspend fun onReceivedUiEffect(uiEffect: IUiEffect) {
         when (uiEffect) {
             is TagsSearchUiEffect.ReturnSelectedTags -> {
@@ -64,6 +70,10 @@ class TagsSearchActivity : CoreActivityWithUiEffect() {
 
             is TagsSearchUiEffect.NavigateBack -> {
                 finish()
+            }
+
+            is TagsSearchUiEffect.NavigateToTagsEdit -> {
+                startActivity(Intent(this, TagsEditActivity::class.java))
             }
 
             else -> super.onReceivedUiEffect(uiEffect)

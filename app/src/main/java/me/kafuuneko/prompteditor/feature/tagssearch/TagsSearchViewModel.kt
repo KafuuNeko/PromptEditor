@@ -77,4 +77,9 @@ class TagsSearchViewModel :
     fun onBack() {
         TagsSearchUiEffect.NavigateBack.tryEmit()
     }
+
+    @UiIntentObserver(TagsSearchUiIntent.OpenTagsEdit::class)
+    fun onOpenTagsEdit() {
+        TagsSearchUiEffect.NavigateToTagsEdit.tryEmit()
+    }
 }

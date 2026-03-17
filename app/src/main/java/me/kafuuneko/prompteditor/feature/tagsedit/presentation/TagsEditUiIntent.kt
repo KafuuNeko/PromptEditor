@@ -19,6 +19,7 @@ sealed class TagsEditUiIntent {
     data object ShowClearConfirmDialog : TagsEditUiIntent()
     data object ConfirmClearAll : TagsEditUiIntent()
     data object DismissDialog : TagsEditUiIntent()
+    data class SearchTags(val query: String) : TagsEditUiIntent()
 
     data object Back : TagsEditUiIntent()
 }

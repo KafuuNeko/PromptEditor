@@ -79,6 +79,7 @@
     <string name="clear_all_tags_confirmation">Вы уверены, что хотите очистить все теги? Это действие нельзя отменить.</string>
     <string name="tags_editor">Редактор тегов</string>
     <string name="no_tags_import_or_add">Тегов нет, импортируйте CSV или добавьте</string>
+    <string name="no_tags_found">Соответствующие теги не найдены</string>
     <string name="tag_name">Название тега</string>
     <string name="tag_description">Описание тега</string>
     <string name="tag_added">Тег добавлен: %1$s</string>
@@ -103,6 +104,7 @@
     <string name="search_tags_placeholder">Поиск тегов...</string>
     <string name="tags_selected">Выбрано тегов: %1$d</string>
     <string name="confirm_selection">Подтвердить</string>
+    <string name="edit_tags">Редактировать теги</string>
 
     <!-- Confirm Dialog -->
     <string name="confirm_delete">Подтвердить удаление</string>

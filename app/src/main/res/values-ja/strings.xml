@@ -79,6 +79,7 @@
     <string name="clear_all_tags_confirmation">すべてのTagsをクリアしますか？この操作は元に戻せません。</string>
     <string name="tags_editor">Tagsエディター</string>
     <string name="no_tags_import_or_add">Tagsがありません，CSVをインポートするか追加</string>
+    <string name="no_tags_found">一致するTagsが見つかりません</string>
     <string name="tag_name">Tag名</string>
     <string name="tag_description">Tagの説明</string>
     <string name="tag_added">Tagを追加しました: %1$s</string>
@@ -103,6 +104,7 @@
     <string name="search_tags_placeholder">Tagsを検索...</string>
     <string name="tags_selected">%1$d個のTagsを選択</string>
     <string name="confirm_selection">確認</string>
+    <string name="edit_tags">Tagsを編集</string>
 
     <!-- Confirm Dialog -->
     <string name="confirm_delete">削除を確認</string>

@@ -79,6 +79,7 @@
     <string name="clear_all_tags_confirmation">Voulez-vous vraiment effacer tous les tags? Cette action est irréversible.</string>
     <string name="tags_editor">Éditeur de Tags</string>
     <string name="no_tags_import_or_add">Aucun tag, importez un CSV ou ajoutez-en</string>
+    <string name="no_tags_found">Aucun tag correspondant trouvé</string>
     <string name="tag_name">Nom du Tag</string>
     <string name="tag_description">Description du Tag</string>
     <string name="tag_added">Tag ajouté: %1$s</string>
@@ -103,6 +104,7 @@
     <string name="search_tags_placeholder">Rechercher des Tags...</string>
     <string name="tags_selected">%1$d tags sélectionnés</string>
     <string name="confirm_selection">Confirmer</string>
+    <string name="edit_tags">Modifier les tags</string>
 
     <!-- Confirm Dialog -->
     <string name="confirm_delete">Confirmer la suppression</string>
