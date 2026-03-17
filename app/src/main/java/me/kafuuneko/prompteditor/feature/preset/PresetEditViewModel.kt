@@ -4,22 +4,28 @@ import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import me.kafuuneko.prompteditor.R
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditDialogState
+import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditMode
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditUiEffect
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditUiIntent
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditUiState
-import me.kafuuneko.prompteditor.feature.preset.presentation.PromptItem
 import me.kafuuneko.prompteditor.libs.core.AppUiEffect
 import me.kafuuneko.prompteditor.libs.core.CoreViewModelWithUiEffect
 import me.kafuuneko.prompteditor.libs.core.UiIntentObserver
+import me.kafuuneko.prompteditor.libs.room.entity.Tag
 import me.kafuuneko.prompteditor.libs.room.repository.PresetRepository
-import me.kafuuneko.prompteditor.libs.utils.PromptParser
+import me.kafuuneko.prompteditor.libs.utils.NovelAIPromptsParser
+import me.kafuuneko.prompteditor.libs.utils.PromptItem
+import me.kafuuneko.prompteditor.libs.utils.expand
+import me.kafuuneko.prompteditor.libs.utils.fold
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 class PresetEditViewModel :
     CoreViewModelWithUiEffect<PresetEditUiIntent, PresetEditUiState>(PresetEditUiState.None),
     KoinComponent {
+    private val _parser = NovelAIPromptsParser()
 
+    private var _tagMap = emptyMap<String, Tag>()
     private val _context by inject<Context>()
     private val _presetRepository by inject<PresetRepository>()
 
@@ -27,128 +33,76 @@ class PresetEditViewModel :
 
     @UiIntentObserver(PresetEditUiIntent.CreatePage::class)
     suspend fun onCreatePage(intent: PresetEditUiIntent.CreatePage) {
+        _tagMap = _presetRepository.getAllTags().associateBy { it.name }
         _currentPresetId = intent.presetId
         loadPreset()
     }
 
-    @UiIntentObserver(PresetEditUiIntent.LoadPreset::class)
-    suspend fun onLoadPreset() {
-        loadPreset()
-    }
-
     private suspend fun loadPreset() {
-        enqueueAsyncTask(Dispatchers.IO) {
-            val preset = _presetRepository.getPresetById(_currentPresetId)
-            if (preset != null) {
-                val allTags = _presetRepository.getAllTags()
-                val promptItems = PromptParser.parsePromptsToItems(preset.prompts, allTags)
-                PresetEditUiState.Normal(
-                    presetId = preset.id,
-                    presetName = preset.name,
-                    promptsText = preset.prompts,
-                    promptItems = promptItems,
-                    isTextMode = false,
-                    isLoading = false,
-                    isSaved = true,
-                    dialogState = PresetEditDialogState.None
-                ).setup()
-            } else {
-                AppUiEffect.PopupToastMessageByResId(R.string.failed_to_load_preset).tryEmit()
-                PresetEditUiEffect.NavigateBack.tryEmit()
-            }
+        val preset = _presetRepository.getPresetById(_currentPresetId)
+        if (preset != null) {
+            val promptItems = _parser.parse(input = preset.prompts, tagMap = _tagMap)
+            PresetEditUiState.Normal(
+                presetId = preset.id,
+                presetName = preset.name,
+                mode = PresetEditMode.ListMode(promptItems.expand()),
+                isSaved = true,
+                dialogState = PresetEditDialogState.None
+            ).setup()
+        } else {
+            AppUiEffect.PopupToastMessageByResId(R.string.failed_to_load_preset).tryEmit()
+            PresetEditUiEffect.NavigateBack.tryEmit()
         }
     }
 
     @UiIntentObserver(PresetEditUiIntent.UpdatePromptsText::class)
     fun onUpdatePromptsText(intent: PresetEditUiIntent.UpdatePromptsText) {
-        val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
-        currentState.copy(
-            promptsText = intent.text,
+        getOrNull<PresetEditUiState.Normal>()?.copy(
+            mode = PresetEditMode.TextMode(intent.text),
             isSaved = false
-        ).setup()
+        )?.setup()
     }
 
-    @UiIntentObserver(PresetEditUiIntent.UpdatePromptItem::class)
-    fun onUpdatePromptItem(intent: PresetEditUiIntent.UpdatePromptItem) {
+    @UiIntentObserver(PresetEditUiIntent.ConfirmUpdatePromptItem::class)
+    fun onConfirmUpdatePromptItem(intent: PresetEditUiIntent.ConfirmUpdatePromptItem) {
         val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
-        val updatedItems = currentState.promptItems.toMutableList()
+        val currentMode = currentState.mode as? PresetEditMode.ListMode ?: return
+        val updatedItems = currentMode.promptItems.toMutableList()
         if (intent.index in updatedItems.indices) {
+            val newDescription = _tagMap[intent.newTag.lowercase()]?.description ?: ""
             updatedItems[intent.index] = updatedItems[intent.index].copy(
-                originalText = intent.newTag,
-                tagName = PromptParser.extractTagName(intent.newTag)
+                tagName = intent.newTag,
+                description = newDescription
             )
             currentState.copy(
-                promptItems = updatedItems,
+                mode = currentMode.copy(promptItems = updatedItems),
                 isSaved = false
             ).setup()
         }
     }
 
-    @UiIntentObserver(PresetEditUiIntent.ConfirmUpdatePromptItem::class)
-    suspend fun onConfirmUpdatePromptItem(intent: PresetEditUiIntent.ConfirmUpdatePromptItem) {
-        val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
-        val updatedItems = currentState.promptItems.toMutableList()
-        if (intent.index in updatedItems.indices) {
-            // 从数据库重新查找修改后的 tag 描述
-            enqueueAsyncTask(Dispatchers.IO) {
-                val allTags = _presetRepository.getAllTags()
-                val tagMap = allTags.associateBy { it.name.lowercase() }
-                val newTagName = PromptParser.extractTagName(intent.newTag)
-                val newDescription = tagMap[newTagName.lowercase()]?.description ?: ""
-
-                updatedItems[intent.index] = updatedItems[intent.index].copy(
-                    originalText = intent.newTag,
-                    tagName = newTagName,
-                    description = newDescription
-                )
-                currentState.copy(
-                    promptItems = updatedItems,
-                    isSaved = false
-                ).setup()
-            }
-        }
-    }
-
-    @UiIntentObserver(PresetEditUiIntent.CancelEditPromptItem::class)
-    suspend fun onCancelEditPromptItem(intent: PresetEditUiIntent.CancelEditPromptItem) {
-        val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
-        // 取消编辑，恢复原始数据（重新加载）
-        enqueueAsyncTask(Dispatchers.IO) {
-            val allTags = _presetRepository.getAllTags()
-            val tagMap = allTags.associateBy { it.name.lowercase() }
-
-            val updatedItems = currentState.promptItems.toMutableList()
-            if (intent.index in updatedItems.indices) {
-                val item = updatedItems[intent.index]
-                val originalDescription =
-                    tagMap[item.tagName.lowercase()]?.description ?: item.description
-                updatedItems[intent.index] = item.copy(description = originalDescription)
-            }
-            currentState.copy(promptItems = updatedItems).setup()
-        }
-    }
-
     @UiIntentObserver(PresetEditUiIntent.ShowDeleteConfirmDialog::class)
     fun onShowDeleteConfirmDialog(intent: PresetEditUiIntent.ShowDeleteConfirmDialog) {
-        val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
-        currentState.copy(
-            dialogState = PresetEditDialogState.DeleteConfirm(
-                index = intent.index,
-                tagName = intent.tagName
-            )
-        ).setup()
+        val dialog = PresetEditDialogState.DeleteConfirm(
+            index = intent.index,
+            tagName = intent.tagName
+        )
+        getOrNull<PresetEditUiState.Normal>()
+            ?.copy(dialogState = dialog)
+            ?.setup()
     }
 
     @UiIntentObserver(PresetEditUiIntent.ConfirmDeletePromptItem::class)
     suspend fun onConfirmDeletePromptItem() {
         val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
+        val currentMode = currentState.mode as? PresetEditMode.ListMode ?: return
         val dialogState = currentState.dialogState
         if (dialogState is PresetEditDialogState.DeleteConfirm) {
-            val updatedItems = currentState.promptItems.toMutableList()
+            val updatedItems = currentMode.promptItems.toMutableList()
             if (dialogState.index in updatedItems.indices) {
                 updatedItems.removeAt(dialogState.index)
                 currentState.copy(
-                    promptItems = updatedItems,
+                    mode = currentMode.copy(promptItems = updatedItems),
                     dialogState = PresetEditDialogState.None,
                     isSaved = false
                 ).setup()
@@ -159,64 +113,45 @@ class PresetEditViewModel :
     @UiIntentObserver(PresetEditUiIntent.ReorderPrompts::class)
     fun onReorderPrompts(intent: PresetEditUiIntent.ReorderPrompts) {
         val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
-        val updatedItems = currentState.promptItems.toMutableList()
+        val currentMode = currentState.mode as? PresetEditMode.ListMode ?: return
+        val updatedItems = currentMode.promptItems.toMutableList()
         if (intent.fromIndex in updatedItems.indices && intent.toIndex in updatedItems.indices) {
             val item = updatedItems.removeAt(intent.fromIndex)
             updatedItems.add(intent.toIndex, item)
             currentState.copy(
-                promptItems = updatedItems,
+                mode = currentMode.copy(promptItems = updatedItems),
                 isSaved = false
             ).setup()
         }
     }
 
     @UiIntentObserver(PresetEditUiIntent.ToggleEditMode::class)
-    suspend fun onToggleEditMode(intent: PresetEditUiIntent.ToggleEditMode) {
+    fun onToggleEditMode() {
         val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
+        val mode = when (val currentMode = currentState.mode) {
+            is PresetEditMode.ListMode -> {
+                PresetEditMode.TextMode(_parser.stringify(currentState.mode.promptItems.fold()))
+            }
 
-        if (intent.isTextMode) {
-            // 切换到文本模式，将items转换为文本
-            val text = PromptParser.convertItemsToText(currentState.promptItems)
-            currentState.copy(
-                isTextMode = true,
-                promptsText = text,
-                isSaved = false
-            ).setup()
-        } else {
-            // 切换到列表模式，解析文本为items
-            enqueueAsyncTask(Dispatchers.IO) {
-                val allTags = _presetRepository.getAllTags()
-                val promptItems = PromptParser.parsePromptsToItems(currentState.promptsText, allTags)
-                currentState.copy(
-                    isTextMode = false,
-                    promptItems = promptItems,
-                    isSaved = false
-                ).setup()
+            is PresetEditMode.TextMode -> {
+                PresetEditMode.ListMode(_parser.parse(currentMode.promptsText, _tagMap).expand())
             }
         }
+        currentState.copy(mode = mode).setup()
     }
 
     @UiIntentObserver(PresetEditUiIntent.SavePreset::class)
     suspend fun onSavePreset() {
-        enqueueAsyncTask(Dispatchers.IO) {
-            val currentState = getOrNull<PresetEditUiState.Normal>() ?: return@enqueueAsyncTask
-
-            val promptsText = if (currentState.isTextMode) {
-                currentState.promptsText
-            } else {
-                PromptParser.convertItemsToText(currentState.promptItems)
-            }
-
-            val preset = _presetRepository.getPresetById(_currentPresetId)
-            if (preset != null) {
-                val updatedPreset = preset.copy(prompts = promptsText)
-                _presetRepository.updatePreset(updatedPreset)
-                currentState.copy(
-                    promptsText = promptsText,
-                    isSaved = true
-                ).setup()
-                AppUiEffect.PopupToastMessageByResId(R.string.saved).tryEmit()
-            }
+        val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
+        val promptsText = when (val currentMode = currentState.mode) {
+            is PresetEditMode.ListMode -> _parser.stringify(currentMode.promptItems.fold())
+            is PresetEditMode.TextMode -> currentMode.promptsText
+        }
+        val preset = _presetRepository.getPresetById(_currentPresetId)
+        if (preset != null) {
+            _presetRepository.updatePreset(preset.copy(prompts = promptsText))
+            currentState.copy(isSaved = true).setup()
+            AppUiEffect.PopupToastMessageByResId(R.string.saved).tryEmit()
         }
     }
 
@@ -228,40 +163,36 @@ class PresetEditViewModel :
     @UiIntentObserver(PresetEditUiIntent.AddTagsFromSearch::class)
     suspend fun onAddTagsFromSearch(intent: PresetEditUiIntent.AddTagsFromSearch) {
         val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
-
-        if (currentState.isTextMode) {
-            // 文本模式：直接追加到文本末尾
-            val newText = if (currentState.promptsText.isBlank()) {
-                intent.tags.joinToString(", ")
-            } else {
-                "${currentState.promptsText}, ${intent.tags.joinToString(", ")}"
-            }
-            currentState.copy(
-                promptsText = newText,
-                isSaved = false
-            ).setup()
-        } else {
-            // 列表模式：追加到列表末尾
-            enqueueAsyncTask(Dispatchers.IO) {
+        when (val mode = currentState.mode) {
+            is PresetEditMode.ListMode -> {
                 val allTags = _presetRepository.getAllTags()
                 val tagMap = allTags.associateBy { it.name.lowercase() }
 
                 val newItems = intent.tags.map { tagName ->
                     val description = tagMap[tagName.lowercase()]?.description ?: ""
-                    PromptItem(
-                        originalText = tagName,
-                        tagName = tagName,
-                        weight = "",
-                        description = description
-                    )
+                    PromptItem(tagName = tagName, description = description)
                 }
 
-                val updatedItems = currentState.promptItems + newItems
+                val updatedItems = mode.promptItems + newItems
                 currentState.copy(
-                    promptItems = updatedItems,
+                    mode = mode.copy(promptItems = updatedItems),
                     isSaved = false
                 ).setup()
-                AppUiEffect.PopupToastMessage(_context.getString(R.string.tags_added, newItems.size)).emit()
+                AppUiEffect.PopupToastMessage(
+                    _context.getString(R.string.tags_added, newItems.size)
+                ).emit()
+            }
+
+            is PresetEditMode.TextMode -> {
+                val newText = if (mode.promptsText.isBlank()) {
+                    intent.tags.joinToString(", ")
+                } else {
+                    "${mode.promptsText}, ${intent.tags.joinToString(", ")}"
+                }
+                currentState.copy(
+                    mode = mode.copy(promptsText = newText),
+                    isSaved = false
+                ).setup()
             }
         }
     }
@@ -270,9 +201,7 @@ class PresetEditViewModel :
     fun onBack() {
         val currentState = getOrNull<PresetEditUiState.Normal>()
         if (currentState != null && !currentState.isSaved) {
-            currentState.copy(
-                dialogState = PresetEditDialogState.UnsavedChangesConfirm
-            ).setup()
+            currentState.copy(dialogState = PresetEditDialogState.UnsavedChangesConfirm).setup()
         } else {
             PresetEditUiEffect.NavigateBack.tryEmit()
         }
@@ -281,9 +210,7 @@ class PresetEditViewModel :
     @UiIntentObserver(PresetEditUiIntent.DismissDialog::class)
     fun onDismissDialog() {
         val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
-        currentState.copy(
-            dialogState = PresetEditDialogState.None
-        ).setup()
+        currentState.copy(dialogState = PresetEditDialogState.None).setup()
     }
 
     @UiIntentObserver(PresetEditUiIntent.ConfirmDiscardChanges::class)

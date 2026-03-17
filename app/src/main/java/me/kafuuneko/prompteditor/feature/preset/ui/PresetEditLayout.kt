@@ -1,6 +1,7 @@
 package me.kafuuneko.prompteditor.feature.preset.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
@@ -45,14 +47,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import me.kafuuneko.prompteditor.R
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditDialogState
+import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditMode
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditUiIntent
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditUiState
-import me.kafuuneko.prompteditor.feature.preset.presentation.PromptItem
+import me.kafuuneko.prompteditor.libs.utils.PromptItem
 import me.kafuuneko.prompteditor.ui.dialog.ConfirmDialog
 import me.kafuuneko.prompteditor.ui.widgets.DraggableItem
 import me.kafuuneko.prompteditor.ui.widgets.dragContainer
@@ -137,15 +141,14 @@ private fun NormalPresetEditLayout(
                 },
                 actions = {
                     IconButton(
-                        onClick = {
-                            emit(PresetEditUiIntent.ToggleEditMode(!uiState.isTextMode))
-                        }
+                        onClick = { PresetEditUiIntent.ToggleEditMode.emit() }
                     ) {
                         Icon(
                             Icons.Default.Edit,
-                            contentDescription = if (uiState.isTextMode) stringResource(R.string.switch_to_list_mode) else stringResource(
-                                R.string.switch_to_text_mode
-                            )
+                            contentDescription = when (uiState.mode) {
+                                is PresetEditMode.ListMode -> stringResource(R.string.switch_to_text_mode)
+                                is PresetEditMode.TextMode -> stringResource(R.string.switch_to_list_mode)
+                            }
                         )
                     }
                     IconButton(
@@ -167,35 +170,32 @@ private fun NormalPresetEditLayout(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (uiState.isTextMode) {
-                TextEditMode(
-                    text = uiState.promptsText,
-                    onTextChange = { emit(PresetEditUiIntent.UpdatePromptsText(it)) },
-                    modifier = Modifier.weight(1f)
-                )
-            } else {
-                DragListMode(
-                    items = uiState.promptItems,
-                    onItemUpdate = { index, newTag ->
-                        emit(PresetEditUiIntent.UpdatePromptItem(index, newTag))
-                    },
-                    onConfirmUpdate = { index, newTag ->
-                        emit(PresetEditUiIntent.ConfirmUpdatePromptItem(index, newTag))
-                    },
-                    onCancelEdit = { index ->
-                        emit(PresetEditUiIntent.CancelEditPromptItem(index))
-                    },
-                    onDelete = { index, tagName ->
-                        emit(PresetEditUiIntent.ShowDeleteConfirmDialog(index, tagName))
-                    },
-                    onReorder = { from, to ->
-                        emit(PresetEditUiIntent.ReorderPrompts(from, to))
-                    },
-                    modifier = Modifier.weight(1f)
-                )
+            when (uiState.mode) {
+                is PresetEditMode.ListMode -> {
+                    DragListMode(
+                        items = uiState.mode.promptItems,
+                        onConfirmUpdate = { index, newTag ->
+                            emit(PresetEditUiIntent.ConfirmUpdatePromptItem(index, newTag))
+                        },
+                        onDelete = { index, tagName ->
+                            emit(PresetEditUiIntent.ShowDeleteConfirmDialog(index, tagName))
+                        },
+                        onReorder = { from, to ->
+                            emit(PresetEditUiIntent.ReorderPrompts(from, to))
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                is PresetEditMode.TextMode -> {
+                    TextEditMode(
+                        text = uiState.mode.promptsText,
+                        onTextChange = { emit(PresetEditUiIntent.UpdatePromptsText(it)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
 
-            // Add button at bottom
             Button(
                 onClick = { emit(PresetEditUiIntent.OpenTagsSearch) },
                 modifier = Modifier
@@ -255,9 +255,7 @@ private fun TextEditMode(
 @Composable
 private fun DragListMode(
     items: List<PromptItem>,
-    onItemUpdate: (Int, String) -> Unit,
     onConfirmUpdate: (Int, String) -> Unit,
-    onCancelEdit: (Int) -> Unit,
     onDelete: (Int, String) -> Unit,
     onReorder: (Int, Int) -> Unit,
     modifier: Modifier = Modifier
@@ -306,8 +304,7 @@ private fun DragListMode(
                             item = item,
                             isDragging = isDragging,
                             onConfirmUpdate = { newTag -> onConfirmUpdate(index, newTag) },
-                            onCancelEdit = { onCancelEdit(index) },
-                            onDelete = { onDelete(index, item.originalText) }
+                            onDelete = { onDelete(index, item.tagName) }
                         )
                     }
                 }
@@ -321,15 +318,12 @@ private fun PromptItemCard(
     item: PromptItem,
     isDragging: Boolean,
     onConfirmUpdate: (String) -> Unit,
-    onCancelEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    var editText by remember(item.originalText) { mutableStateOf(item.originalText) }
+    var editText by remember(item.tagName) { mutableStateOf(item.tagName) }
     var isEditing by remember { mutableStateOf(false) }
 
-    LaunchedEffect(item.originalText) {
-        editText = item.originalText
-    }
+    LaunchedEffect(item.tagName) { editText = item.tagName }
 
     Card(
         modifier = Modifier
@@ -359,12 +353,11 @@ private fun PromptItemCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "::",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(end = 8.dp)
+                    text = "(${item.weight})",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
-
+                Spacer(modifier = Modifier.width(3.dp))
                 if (isEditing) {
                     BasicTextField(
                         value = editText,
@@ -379,7 +372,7 @@ private fun PromptItemCard(
                     )
                 } else {
                     Text(
-                        text = item.originalText,
+                        text = item.tagName,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.weight(1f),
                         maxLines = 1
@@ -396,9 +389,8 @@ private fun PromptItemCard(
                         Text(stringResource(R.string.ok))
                     }
                     TextButton(onClick = {
-                        editText = item.originalText
+                        editText = item.tagName
                         isEditing = false
-                        onCancelEdit()
                     }) {
                         Text(stringResource(R.string.cancel))
                     }
@@ -425,15 +417,6 @@ private fun PromptItemCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2
-                )
-            }
-
-            if (item.weight.isNotEmpty() && !isEditing) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.weight_format, item.weight),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }

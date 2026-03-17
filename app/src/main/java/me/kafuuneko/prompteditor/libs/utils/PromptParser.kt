@@ -1,121 +1,236 @@
 package me.kafuuneko.prompteditor.libs.utils
 
-import me.kafuuneko.prompteditor.feature.preset.presentation.PromptItem
 import me.kafuuneko.prompteditor.libs.room.entity.Tag
-import java.util.regex.Pattern
+import kotlin.math.pow
+import kotlin.math.round
+
+data class PromptGroupItem(
+    val tags: List<Pair<String, String>>, // Pair<TagName, Description>
+    val weight: Double = 1.0
+)
+
+data class PromptItem(
+    val tagName: String,
+    val description: String,
+    val weight: Double = 1.0,
+    val group: Int = 0
+)
+
+fun List<PromptGroupItem>.expand(): List<PromptItem> = this.flatMapIndexed { index, groupItem ->
+    groupItem.tags.map { (name, desc) ->
+        PromptItem(
+            tagName = name,
+            description = desc,
+            weight = groupItem.weight,
+            group = index
+        )
+    }
+}
+
+fun List<PromptItem>.fold(): List<PromptGroupItem> = this.groupBy { it.group }
+    .values
+    .map { items ->
+        PromptGroupItem(
+            tags = items.map { it.tagName to it.description },
+            weight = items.firstOrNull()?.weight ?: 1.0
+        )
+    }
+
+interface IPromptsParser {
+    fun parse(input: String, tagMap: Map<String, Tag> = emptyMap()): List<PromptGroupItem>
+    fun stringify(items: List<PromptGroupItem>): String
+}
+
+private fun Double.formatWeight(): String {
+    val rounded = round(this * 100) / 100
+    return if (rounded % 1.0 == 0.0) {
+        rounded.toInt().toString()
+    } else {
+        rounded.toString()
+    }
+}
+
+private fun parseTagsWithMap(input: String, tagMap: Map<String, Tag>): List<Pair<String, String>> {
+    return input.split(",")
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .map { tagName ->
+            Pair(tagName, tagMap[tagName.lowercase()]?.description ?: "")
+        }
+}
 
 /**
- * Prompt解析工具类
- * 处理Prompt文本与PromptItem之间的转换，以及tag和权重的提取
+ * NovelAI 语法解析器
  */
-object PromptParser {
+class NovelAIPromptsParser : IPromptsParser {
+    companion object {
+        private const val NAI_STEP = 1.05
+        private val NAI_SCOPE_REGEX = Regex("""^([0-9.]+)\s*::(.*)::$""")
+    }
 
-    // 匹配格式:
-    // 单层: {tag}, {tag:weight}, [tag], [tag:weight], (tag), (tag:weight)
-    // 多层: {{tag}}, {{tag:weight}}, [[tag]], [[tag:weight]], ((tag)), ((tag:weight))
-    private val WEIGHT_PATTERN = Pattern.compile(
-        "^" +
-        // 多层大括号: {{tag}} 或 {{tag:weight}}
-        "(\\{{2,})([^:}]+)(?::([^}]+))?(\\}{2,})" +
-        "|" +
-        // 多层中括号: [[tag]] 或 [[tag:weight]]
-        "(\\[{2,})([^:\\]]+)(?::([^]]+))?(]{2,})" +
-        "|" +
-        // 多层圆括号: ((tag)) 或 ((tag:weight))
-        "(\\({2,})([^:)]+)(?::([^)]+))?(\\){2,})" +
-        "|" +
-        // 单层大括号: {tag} 或 {tag:weight}
-        "(\\{)([^:}]+)(?::([^}]+))?(\\})" +
-        "|" +
-        // 单层中括号: [tag] 或 [tag:weight]
-        "(\\[)([^:\\]]+)(?::([^]]+))?(])" +
-        "|" +
-        // 单层圆括号: (tag) 或 (tag:weight)
-        "(\\()([^:)]+)(?::([^)]+))?(\\))" +
-        "$"
-    )
+    override fun parse(input: String, tagMap: Map<String, Tag>): List<PromptGroupItem> {
+        return splitRespectingScopes(input).mapNotNull { chunk ->
+            var text = chunk.trim()
+            if (text.isEmpty()) return@mapNotNull null
 
-    private val TAG_SPLITTER = Pattern.compile(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
-
-
-    /**
-     * 将prompts文本解析为PromptItem列表
-     *
-     * @param prompts 原始prompts文本
-     * @param allTags 所有可用的Tag列表，用于获取描述
-     * @return 解析后的PromptItem列表
-     */
-    fun parsePromptsToItems(prompts: String, allTags: List<Tag>): List<PromptItem> {
-        if (prompts.isBlank()) return emptyList()
-
-        val items = mutableListOf<PromptItem>()
-        val tags = TAG_SPLITTER.split(prompts.trim())
-        val tagMap = allTags.associateBy { it.name.lowercase() }
-
-        for (tag in tags) {
-            val trimmed = tag.trim()
-            if (trimmed.isEmpty()) continue
-
-            val (tagName, weight) = extractTagAndWeight(trimmed)
-            val tagDescription = tagMap[tagName.lowercase()]?.description ?: ""
-
-            items.add(
-                PromptItem(
-                    originalText = trimmed,
-                    tagName = tagName,
-                    weight = weight,
-                    description = tagDescription
+            // 1. 优先匹配显式数值权重 1.5::...::
+            val match = NAI_SCOPE_REGEX.find(text)
+            if (match != null) {
+                val weight = match.groupValues[1].toDoubleOrNull() ?: 1.0
+                val tagsString = match.groupValues[2]
+                return@mapNotNull PromptGroupItem(
+                    tags = parseTagsWithMap(tagsString, tagMap),
+                    weight = weight
                 )
+            }
+
+            // 2. 剥洋葱逻辑：循环处理最外层的 {} 和 []
+            var braceDepth = 0
+            var bracketDepth = 0
+
+            while (true) {
+                if (text.startsWith("{") && text.endsWith("}")) {
+                    braceDepth++
+                    text = text.substring(1, text.length - 1).trim()
+                } else if (text.startsWith("[") && text.endsWith("]")) {
+                    bracketDepth++
+                    text = text.substring(1, text.length - 1).trim()
+                } else {
+                    break
+                }
+            }
+
+            val weight = NAI_STEP.pow(braceDepth.toDouble()) / NAI_STEP.pow(bracketDepth.toDouble())
+
+            PromptGroupItem(
+                tags = parseTagsWithMap(text, tagMap),
+                weight = weight
             )
         }
-
-        return items
     }
 
-    /**
-     * 从文本中提取tag名称和权重
-     *
-     * @param text 原始文本（如 {tag:1.2} 或 [tag]）
-     * @return Pair(tagName, weight)
-     */
-    fun extractTagAndWeight(text: String): Pair<String, String> {
-        val matcher = WEIGHT_PATTERN.matcher(text)
-        return if (matcher.matches()) {
-            // Groups: 1-4 (multi {}), 5-8 (multi []), 9-12 (multi ()), 13-16 (single {}), 17-20 (single []), 21-24 (single ())
-            val tagName = matcher.group(2) ?: matcher.group(6) ?: matcher.group(10)
-                ?: matcher.group(14) ?: matcher.group(18) ?: matcher.group(22) ?: text
-            val weight = matcher.group(3) ?: matcher.group(7) ?: matcher.group(11)
-                ?: matcher.group(15) ?: matcher.group(19) ?: matcher.group(23) ?: ""
-            tagName to weight
-        } else {
-            text to ""
-        }
-    }
-
-    /**
-     * 从文本中提取tag名称
-     *
-     * @param text 原始文本
-     * @return tag名称
-     */
-    fun extractTagName(text: String): String {
-        val (tagName, _) = extractTagAndWeight(text)
-        return tagName
-    }
-
-    /**
-     * 将PromptItem列表转换为prompts文本
-     *
-     * @param items PromptItem列表
-     * @return 转换后的prompts文本
-     */
-    fun convertItemsToText(items: List<PromptItem>): String {
+    override fun stringify(items: List<PromptGroupItem>): String {
         return items.joinToString(", ") { item ->
-            if (item.weight.isNotEmpty()) {
-                "{${item.tagName}:${item.weight}}"
+            val tagsStr = item.tags.joinToString(", ") { it.first }
+            if (item.weight == 1.0) {
+                tagsStr
             } else {
-                item.tagName
+                "${item.weight.formatWeight()}::${tagsStr}::"
             }
         }
+    }
+
+    private fun splitRespectingScopes(input: String): List<String> {
+        val result = mutableListOf<String>()
+        val buffer = StringBuilder()
+        var depth = 0
+        var inScope = false
+        var i = 0
+
+        while (i < input.length) {
+            val char = input[i]
+            if (char == ':' && i + 1 < input.length && input[i + 1] == ':') {
+                inScope = !inScope
+                buffer.append("::")
+                i += 2
+                continue
+            }
+            when (char) {
+                '{', '[' -> depth++
+                '}', ']' -> depth--
+            }
+            if (char == ',' && depth <= 0 && !inScope) {
+                result.add(buffer.toString())
+                buffer.clear()
+            } else {
+                buffer.append(char)
+            }
+            i++
+        }
+        if (buffer.isNotEmpty()) result.add(buffer.toString())
+        return result
+    }
+}
+
+/**
+ * Stable Diffusion 语法解析器
+ */
+class SDPromptsParser : IPromptsParser {
+    companion object {
+        private const val SD_STEP = 1.1
+        private val SD_WEIGHT_REGEX = Regex("""^\((.*):\s*([0-9.]+)\s*\)$""")
+    }
+
+    override fun parse(input: String, tagMap: Map<String, Tag>): List<PromptGroupItem> {
+        return splitRespectingBrackets(input).mapNotNull { chunk ->
+            var text = chunk.trim()
+            if (text.isEmpty()) return@mapNotNull null
+
+            // 1. 优先匹配显式数值权重 (tags...: 1.5)
+            val match = SD_WEIGHT_REGEX.find(text)
+            if (match != null) {
+                val tagsString = match.groupValues[1]
+                val weight = match.groupValues[2].toDoubleOrNull() ?: 1.0
+                return@mapNotNull PromptGroupItem(
+                    tags = parseTagsWithMap(tagsString, tagMap),
+                    weight = weight
+                )
+            }
+
+            // 2. 剥洋葱逻辑：循环处理最外层的 () 和 []
+            var parenDepth = 0
+            var bracketDepth = 0
+
+            while (true) {
+                if (text.startsWith("(") && text.endsWith(")")) {
+                    parenDepth++
+                    text = text.substring(1, text.length - 1).trim()
+                } else if (text.startsWith("[") && text.endsWith("]")) {
+                    bracketDepth++
+                    text = text.substring(1, text.length - 1).trim()
+                } else {
+                    break
+                }
+            }
+
+            val weight = SD_STEP.pow(parenDepth.toDouble()) * (0.9).pow(bracketDepth.toDouble())
+
+            PromptGroupItem(
+                tags = parseTagsWithMap(text, tagMap),
+                weight = weight
+            )
+        }
+    }
+
+    override fun stringify(items: List<PromptGroupItem>): String {
+        return items.joinToString(", ") { item ->
+            val tagsStr = item.tags.joinToString(", ") { it.first }
+            if (item.weight == 1.0) {
+                tagsStr
+            } else {
+                "(${tagsStr}:${item.weight.formatWeight()})"
+            }
+        }
+    }
+
+    private fun splitRespectingBrackets(input: String): List<String> {
+        val result = mutableListOf<String>()
+        val buffer = StringBuilder()
+        var depth = 0
+
+        for (char in input) {
+            when (char) {
+                '(', '[' -> depth++
+                ')', ']' -> depth--
+            }
+            if (char == ',' && depth <= 0) {
+                result.add(buffer.toString())
+                buffer.clear()
+            } else {
+                buffer.append(char)
+            }
+        }
+        if (buffer.isNotEmpty()) result.add(buffer.toString())
+        return result
     }
 }
