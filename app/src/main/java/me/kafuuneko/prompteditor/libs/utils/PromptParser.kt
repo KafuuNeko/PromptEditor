@@ -11,8 +11,8 @@ import java.util.regex.Pattern
 object PromptParser {
 
     // 匹配格式:
-    // 单层: {tag}, {tag:weight}, [tag], [tag:weight]
-    // 多层: {{tag}}, {{tag:weight}}, [[tag]], [[tag:weight]]
+    // 单层: {tag}, {tag:weight}, [tag], [tag:weight], (tag), (tag:weight)
+    // 多层: {{tag}}, {{tag:weight}}, [[tag]], [[tag:weight]], ((tag)), ((tag:weight))
     private val WEIGHT_PATTERN = Pattern.compile(
         "^" +
         // 多层大括号: {{tag}} 或 {{tag:weight}}
@@ -21,11 +21,17 @@ object PromptParser {
         // 多层中括号: [[tag]] 或 [[tag:weight]]
         "(\\[{2,})([^:\\]]+)(?::([^]]+))?(]{2,})" +
         "|" +
+        // 多层圆括号: ((tag)) 或 ((tag:weight))
+        "(\\({2,})([^:)]+)(?::([^)]+))?(\\){2,})" +
+        "|" +
         // 单层大括号: {tag} 或 {tag:weight}
         "(\\{)([^:}]+)(?::([^}]+))?(\\})" +
         "|" +
         // 单层中括号: [tag] 或 [tag:weight]
         "(\\[)([^:\\]]+)(?::([^]]+))?(])" +
+        "|" +
+        // 单层圆括号: (tag) 或 (tag:weight)
+        "(\\()([^:)]+)(?::([^)]+))?(\\))" +
         "$"
     )
 
@@ -75,9 +81,11 @@ object PromptParser {
     fun extractTagAndWeight(text: String): Pair<String, String> {
         val matcher = WEIGHT_PATTERN.matcher(text)
         return if (matcher.matches()) {
-            // Groups: 1-4 (multi {}), 5-8 (multi []), 9-12 (single {}), 13-16 (single [])
-            val tagName = matcher.group(2) ?: matcher.group(6) ?: matcher.group(10) ?: matcher.group(14) ?: text
-            val weight = matcher.group(3) ?: matcher.group(7) ?: matcher.group(11) ?: matcher.group(15) ?: ""
+            // Groups: 1-4 (multi {}), 5-8 (multi []), 9-12 (multi ()), 13-16 (single {}), 17-20 (single []), 21-24 (single ())
+            val tagName = matcher.group(2) ?: matcher.group(6) ?: matcher.group(10)
+                ?: matcher.group(14) ?: matcher.group(18) ?: matcher.group(22) ?: text
+            val weight = matcher.group(3) ?: matcher.group(7) ?: matcher.group(11)
+                ?: matcher.group(15) ?: matcher.group(19) ?: matcher.group(23) ?: ""
             tagName to weight
         } else {
             text to ""
