@@ -241,9 +241,11 @@ class PresetEditViewModel :
                 val allTags = _presetRepository.getAllTags()
                 val tagMap = allTags.associateBy { it.name.lowercase() }
 
+                var maxGroup = mode.promptItems.maxOfOrNull { it.group } ?: -1
                 val newItems = intent.tags.map { tagName ->
                     val description = tagMap[tagName.lowercase()]?.description ?: ""
-                    PromptItem(tagName = tagName, description = description)
+                    maxGroup++
+                    PromptItem(tagName = tagName, description = description, group = maxGroup)
                 }
 
                 val updatedItems = mode.promptItems + newItems
