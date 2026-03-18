@@ -23,16 +23,12 @@ class TagsSearchViewModel :
     }
 
     private suspend fun loadAllTags() {
-        enqueueAsyncTask(Dispatchers.IO) {
-            val tags = _presetRepository.getAllTags()
-            TagsSearchUiState.Normal(
-                allTags = tags,
-                filteredTags = tags,
-                selectedTags = emptySet(),
-                searchQuery = "",
-                isLoading = false
-            ).setup()
-        }
+        val tags = _presetRepository.getAllTags()
+        val currentState = getOrNull<TagsSearchUiState.Normal>() ?: TagsSearchUiState.Normal()
+        currentState.copy(
+            allTags = tags,
+            filteredTags = TextSearcher.filterTags(tags, currentState.searchQuery)
+        ).setup()
     }
 
     @UiIntentObserver(TagsSearchUiIntent.SearchTags::class)

@@ -57,7 +57,6 @@ class TagsSearchActivity : CoreActivityWithUiEffect() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.emit(TagsSearchUiIntent.CreatePage)
     }
 
     override suspend fun onReceivedUiEffect(uiEffect: IUiEffect) {
