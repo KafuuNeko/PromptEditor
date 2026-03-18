@@ -18,6 +18,9 @@
     <string name="copy">Копировать</string>
     <string name="unknown_version">Неизвестная версия</string>
     <string name="about">О приложении</string>
+    <string name="import_default_prompts_title">Импорт промптов по умолчанию</string>
+    <string name="import_default_prompts_message">Вы хотите импортировать промпты по умолчанию?</string>
+    <string name="importing">Импорт…</string>
 
     <!-- Main Screen -->
     <string name="exit_app_confirmation">Вы уверены, что хотите выйти из приложения?</string>

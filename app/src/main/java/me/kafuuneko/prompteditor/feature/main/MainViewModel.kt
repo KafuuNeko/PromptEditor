@@ -1,5 +1,6 @@
 package me.kafuuneko.prompteditor.feature.main
 
+import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import me.kafuuneko.prompteditor.R
 import me.kafuuneko.prompteditor.feature.main.presentation.MainDialogState
@@ -18,11 +19,16 @@ class MainViewModel :
     KoinComponent {
 
     private val _presetRepository by inject<PresetRepository>()
+    private val _context by inject<Context>()
 
     @UiIntentObserver(MainUiIntent.CreatePage::class)
     suspend fun onCreatePage() {
         MainUiState.Normal().setup()
         loadPresetSets()
+        if (!me.kafuuneko.prompteditor.libs.AppModel.isFirstUse) {
+            getOrNull<MainUiState.Normal>()?.copy(dialogState = MainDialogState.FirstUseConfirm)
+                ?.setup()
+        }
     }
 
     @UiIntentObserver(MainUiIntent.LoadPresetSets::class)
@@ -93,7 +99,8 @@ class MainViewModel :
             val presetSet = currentState.presetSets.find { it.id == intent.id }
             if (presetSet != null) {
                 _presetRepository.updatePresetSet(presetSet.copy(name = intent.newName))
-                MainUiEffect.ShowToast(R.string.preset_set_renamed, listOf(intent.newName)).tryEmit()
+                MainUiEffect.ShowToast(R.string.preset_set_renamed, listOf(intent.newName))
+                    .tryEmit()
                 loadPresetSets()
             }
         }
@@ -113,6 +120,11 @@ class MainViewModel :
         MainUiEffect.NavigateToTagsImport.tryEmit()
     }
 
+    @UiIntentObserver(MainUiIntent.OpenAbout::class)
+    fun onOpenAbout() {
+        MainUiEffect.NavigateToAbout.tryEmit()
+    }
+
     @UiIntentObserver(MainUiIntent.Back::class)
     fun onBack() {
         getOrNull<MainUiState.Normal>()?.copy(dialogState = MainDialogState.ExitConfirm)?.setup()
@@ -126,5 +138,48 @@ class MainViewModel :
     @UiIntentObserver(MainUiIntent.ConfirmExit::class)
     fun onConfirmExit() {
         MainUiState.Finished.setup()
+    }
+
+    @UiIntentObserver(MainUiIntent.ConfirmFirstUseImport::class)
+    suspend fun onConfirmFirstUseImport() {
+        getOrNull<MainUiState.Normal>()?.copy(dialogState = MainDialogState.ImportingTags)?.setup()
+        enqueueAsyncTask(Dispatchers.IO) {
+            try {
+                val jaCsv = _context.assets.open("danbooru_tags_ja.csv").bufferedReader()
+                    .use { it.readText() }
+                val existingTags = _presetRepository.getAllTags()
+                me.kafuuneko.prompteditor.libs.utils.CsvParser.processTagImport(
+                    jaCsv,
+                    existingTags
+                ) { tags ->
+                    _presetRepository.insertTags(tags)
+                }
+
+                val configOptions = _context.resources.configuration.locales
+                val isChinese = !configOptions.isEmpty && configOptions.get(0).language == "zh"
+                if (isChinese) {
+                    val zhCsv = _context.assets.open("danbooru_tags_zh.csv").bufferedReader()
+                        .use { it.readText() }
+                    val updatedTags = _presetRepository.getAllTags()
+                    me.kafuuneko.prompteditor.libs.utils.CsvParser.processTagImport(
+                        zhCsv,
+                        updatedTags
+                    ) { tags ->
+                        _presetRepository.insertTags(tags)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                me.kafuuneko.prompteditor.libs.AppModel.isFirstUse = true
+                getOrNull<MainUiState.Normal>()?.copy(dialogState = MainDialogState.None)?.setup()
+            }
+        }
+    }
+
+    @UiIntentObserver(MainUiIntent.CancelFirstUseImport::class)
+    fun onCancelFirstUseImport() {
+        me.kafuuneko.prompteditor.libs.AppModel.isFirstUse = true
+        getOrNull<MainUiState.Normal>()?.copy(dialogState = MainDialogState.None)?.setup()
     }
 }

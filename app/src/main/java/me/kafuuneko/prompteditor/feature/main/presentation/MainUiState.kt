@@ -20,4 +20,6 @@ sealed class MainDialogState {
     data object ExitConfirm : MainDialogState()
     data class DeletePresetSet(val id: Long, val name: String) : MainDialogState()
     data class RenamePresetSet(val id: Long, val name: String) : MainDialogState()
+    data object FirstUseConfirm : MainDialogState()
+    data object ImportingTags : MainDialogState()
 }

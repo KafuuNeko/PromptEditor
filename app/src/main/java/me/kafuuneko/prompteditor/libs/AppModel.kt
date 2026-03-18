@@ -10,4 +10,6 @@ object AppModel : KotprefModel() {
     const val FEEDBACK_URL = "https://github.com/KafuuNeko/PromptEditor/issues"
 
     const val GOOGLE_PLAY_URL = "https://play.google.com"
+
+    var isFirstUse by booleanPref()
 }

@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
@@ -26,6 +28,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -111,6 +115,26 @@ private fun DialogSwitch(
             },
             onDismissRequest = { MainUiIntent.DismissDialog.emit() }
         )
+
+        MainDialogState.FirstUseConfirm -> ConfirmDialog(
+            onConfirmRequest = { MainUiIntent.ConfirmFirstUseImport.emit() },
+            onDismissRequest = { MainUiIntent.CancelFirstUseImport.emit() }
+        ) {
+            Text(stringResource(R.string.import_default_prompts_message))
+        }
+
+        MainDialogState.ImportingTags -> AlertDialog(
+            onDismissRequest = { },
+            confirmButton = { },
+            title = { Text(stringResource(R.string.import_default_prompts_title)) },
+            text = { 
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(stringResource(R.string.importing))
+                }
+            }
+        )
     }
 }
 
@@ -194,6 +218,12 @@ private fun Normal(
                         Icon(
                             Icons.Default.Add,
                             contentDescription = stringResource(R.string.create_preset_set)
+                        )
+                    }
+                    IconButton(onClick = { MainUiIntent.OpenAbout.emit() }) {
+                        Icon(
+                            Icons.Default.Info,
+                            contentDescription = stringResource(R.string.about)
                         )
                     }
                 }

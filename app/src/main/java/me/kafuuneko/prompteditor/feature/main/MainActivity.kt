@@ -63,6 +63,10 @@ class MainActivity : CoreActivityWithUiEffect() {
                 startActivity(Intent(this, TagsEditActivity::class.java))
             }
 
+            is MainUiEffect.NavigateToAbout -> {
+                startActivity(Intent(this, me.kafuuneko.prompteditor.feature.about.AboutActivity::class.java))
+            }
+
             else -> super.onReceivedUiEffect(uiEffect)
         }
     }

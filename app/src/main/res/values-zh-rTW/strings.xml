@@ -18,6 +18,9 @@
     <string name="copy">複製</string>
     <string name="unknown_version">未知版本</string>
     <string name="about">關於</string>
+    <string name="import_default_prompts_title">匯入預設提示詞</string>
+    <string name="import_default_prompts_message">是否匯入預設提示詞？</string>
+    <string name="importing">匯入中…</string>
 
     <!-- Main Screen -->
     <string name="exit_app_confirmation">確定要離開應用程式嗎？</string>

@@ -37,6 +37,10 @@
             android:name=".feature.tagssearch.TagsSearchActivity"
             android:exported="false"
             android:theme="@style/Theme.PromptEditor" />
+        <activity
+            android:name=".feature.about.AboutActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PromptEditor" />
     </application>
 
 </manifest>

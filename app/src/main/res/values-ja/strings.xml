@@ -18,6 +18,9 @@
     <string name="copy">コピー</string>
     <string name="unknown_version">バージョン不明</string>
     <string name="about">アプリについて</string>
+    <string name="import_default_prompts_title">デフォルトのプロンプトをインポート</string>
+    <string name="import_default_prompts_message">デフォルトのプロンプトをインポートしますか？</string>
+    <string name="importing">インポート中…</string>
 
     <!-- Main Screen -->
     <string name="exit_app_confirmation">アプリを終了しますか？</string>

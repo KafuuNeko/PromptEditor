@@ -18,6 +18,9 @@
     <string name="copy">복사</string>
     <string name="unknown_version">알 수 없는 버전</string>
     <string name="about">정보</string>
+    <string name="import_default_prompts_title">기본 프롬프트 가져오기</string>
+    <string name="import_default_prompts_message">기본 프롬프트를 가져오시겠습니까?</string>
+    <string name="importing">가져오는 중…</string>
 
     <!-- Main Screen -->
     <string name="exit_app_confirmation">앱을 종료하시겠습니까?</string>

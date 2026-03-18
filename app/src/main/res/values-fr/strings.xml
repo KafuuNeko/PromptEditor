@@ -18,6 +18,9 @@
     <string name="copy">Copier</string>
     <string name="unknown_version">Version inconnue</string>
     <string name="about">À propos</string>
+    <string name="import_default_prompts_title">Importer les prompts par défaut</string>
+    <string name="import_default_prompts_message">Voulez-vous importer les prompts par défaut ?</string>
+    <string name="importing">Importation…</string>
 
     <!-- Main Screen -->
     <string name="exit_app_confirmation">Voulez-vous vraiment quitter l\'application?</string>

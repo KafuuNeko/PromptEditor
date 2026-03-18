@@ -11,4 +11,6 @@ sealed class MainUiEffect : IUiEffect {
     data class NavigateToPresetSetEdit(val presetSet: PresetSet) : MainUiEffect()
 
     data object NavigateToTagsImport : MainUiEffect()
+    
+    data object NavigateToAbout : MainUiEffect()
 }

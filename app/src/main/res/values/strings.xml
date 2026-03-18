@@ -18,6 +18,9 @@
     <string name="copy">Copy</string>
     <string name="unknown_version">Unknown version</string>
     <string name="about">About</string>
+    <string name="import_default_prompts_title">Import Default Prompts</string>
+    <string name="import_default_prompts_message">Do you want to import default Prompts?</string>
+    <string name="importing">Importing…</string>
 
     <!-- Main Screen -->
     <string name="exit_app_confirmation">Are you sure you want to exit?</string>
@@ -113,4 +116,5 @@
 
     <!-- Confirm Dialog -->
     <string name="confirm_delete">Confirm Delete</string>
+    <string name="code_repository">Code repository</string>
 </resources>
