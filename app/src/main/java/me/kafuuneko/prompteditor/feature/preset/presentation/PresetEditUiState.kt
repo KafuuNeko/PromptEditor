@@ -31,5 +31,11 @@ sealed class PresetEditDialogState {
     data object None : PresetEditDialogState()
     data object UnsavedChangesConfirm : PresetEditDialogState()
     data class DeleteConfirm(val index: Int, val tagName: String) : PresetEditDialogState()
+    data class EditDialog(
+        val index: Int,
+        val tagName: String,
+        val weight: Double,
+        val group: Int
+    ) : PresetEditDialogState()
 }
 

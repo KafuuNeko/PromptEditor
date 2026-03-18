@@ -1,12 +1,10 @@
 package me.kafuuneko.prompteditor.feature.preset.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +16,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -36,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,8 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -58,9 +52,12 @@ import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditUiIntent
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditUiState
 import me.kafuuneko.prompteditor.libs.utils.PromptItem
 import me.kafuuneko.prompteditor.ui.dialog.ConfirmDialog
+import me.kafuuneko.prompteditor.ui.dialog.PresetEditDialog
+import me.kafuuneko.prompteditor.ui.dialog.getGroupColor
 import me.kafuuneko.prompteditor.ui.widgets.DraggableItem
 import me.kafuuneko.prompteditor.ui.widgets.dragContainer
 import me.kafuuneko.prompteditor.ui.widgets.rememberGridDragDropState
+import me.kafuuneko.prompteditor.ui.dialog.getGroupColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,6 +115,25 @@ private fun DialogSwitch(
                 Text(stringResource(R.string.delete_tag_confirmation, dialogState.tagName))
             }
         }
+
+        is PresetEditDialogState.EditDialog -> {
+            PresetEditDialog(
+                tagName = dialogState.tagName,
+                initialWeight = dialogState.weight,
+                initialGroup = dialogState.group,
+                onConfirm = { tagName, weight, group ->
+                    emit(
+                        PresetEditUiIntent.ConfirmUpdateItem(
+                            dialogState.index,
+                            tagName,
+                            weight,
+                            group
+                        )
+                    )
+                },
+                onDismissRequest = { emit(PresetEditUiIntent.DismissDialog) }
+            )
+        }
     }
 }
 
@@ -174,14 +190,17 @@ private fun NormalPresetEditLayout(
                 is PresetEditMode.ListMode -> {
                     DragListMode(
                         items = uiState.mode.promptItems,
-                        onConfirmUpdate = { index, newTag ->
-                            emit(PresetEditUiIntent.ConfirmUpdatePromptItem(index, newTag))
-                        },
                         onDelete = { index, tagName ->
                             emit(PresetEditUiIntent.ShowDeleteConfirmDialog(index, tagName))
                         },
+                        onEdit = { index ->
+                            emit(PresetEditUiIntent.ShowEditDialog(index))
+                        },
                         onReorder = { from, to ->
                             emit(PresetEditUiIntent.ReorderPrompts(from, to))
+                        },
+                        onReorderEnd = {
+                            emit(PresetEditUiIntent.ReassignGroups)
                         },
                         modifier = Modifier.weight(1f)
                     )
@@ -255,15 +274,22 @@ private fun TextEditMode(
 @Composable
 private fun DragListMode(
     items: List<PromptItem>,
-    onConfirmUpdate: (Int, String) -> Unit,
     onDelete: (Int, String) -> Unit,
+    onEdit: (Int) -> Unit,
     onReorder: (Int, Int) -> Unit,
+    onReorderEnd: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val gridState = rememberLazyGridState()
-    val dragDropState = rememberGridDragDropState(gridState) { fromIndex, toIndex ->
-        onReorder(fromIndex, toIndex)
-    }
+    val dragDropState = rememberGridDragDropState(
+        gridState = gridState,
+        onMove = { fromIndex, toIndex ->
+            onReorder(fromIndex, toIndex)
+        },
+        onDragEnd = {
+            onReorderEnd()
+        }
+    )
 
     if (items.isEmpty()) {
         Box(
@@ -289,9 +315,9 @@ private fun DragListMode(
                 columns = GridCells.Fixed(1),
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(horizontal = 10.dp)
                     .dragContainer(dragDropState),
                 state = gridState,
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -303,8 +329,8 @@ private fun DragListMode(
                         PromptItemCard(
                             item = item,
                             isDragging = isDragging,
-                            onConfirmUpdate = { newTag -> onConfirmUpdate(index, newTag) },
-                            onDelete = { onDelete(index, item.tagName) }
+                            onDelete = { onDelete(index, item.tagName) },
+                            onEdit = { onEdit(index) }
                         )
                     }
                 }
@@ -317,14 +343,9 @@ private fun DragListMode(
 private fun PromptItemCard(
     item: PromptItem,
     isDragging: Boolean,
-    onConfirmUpdate: (String) -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
 ) {
-    var editText by remember(item.tagName) { mutableStateOf(item.tagName) }
-    var isEditing by remember { mutableStateOf(false) }
-
-    LaunchedEffect(item.tagName) { editText = item.tagName }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -343,34 +364,38 @@ private fun PromptItemCard(
             defaultElevation = if (isDragging) 8.dp else 0.dp
         )
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp)
+                .padding(10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "(${item.weight})",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(3.dp))
-                if (isEditing) {
-                    BasicTextField(
-                        value = editText,
-                        onValueChange = { editText = it },
-                        modifier = Modifier.weight(1f),
-                        textStyle = TextStyle(
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                        ),
-                        singleLine = true,
-                        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary)
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .height(32.dp)
+                    .background(
+                        getGroupColor(item.group),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(2.dp)
                     )
-                } else {
+            )
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "(${item.weight})",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
                     Text(
                         text = item.tagName,
                         style = MaterialTheme.typography.bodyMedium,
@@ -379,44 +404,29 @@ private fun PromptItemCard(
                     )
                 }
 
-                if (isEditing) {
-                    TextButton(
-                        onClick = {
-                            onConfirmUpdate(editText)
-                            isEditing = false
-                        }
-                    ) {
-                        Text(stringResource(R.string.ok))
-                    }
-                    TextButton(onClick = {
-                        editText = item.tagName
-                        isEditing = false
-                    }) {
-                        Text(stringResource(R.string.cancel))
-                    }
-                } else {
-                    TextButton(
-                        onClick = { isEditing = true }
-                    ) {
-                        Text(stringResource(R.string.edit))
-                    }
-                    IconButton(onClick = onDelete) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = stringResource(R.string.delete),
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
+                if (item.description.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = item.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2
+                    )
                 }
             }
 
-            if (item.description.isNotEmpty() && !isEditing) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = item.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2
+            IconButton(onClick = onEdit) {
+                Icon(
+                    Icons.Default.Edit,
+                    contentDescription = stringResource(R.string.edit),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+            IconButton(onClick = onDelete) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.delete),
+                    tint = MaterialTheme.colorScheme.error
                 )
             }
         }

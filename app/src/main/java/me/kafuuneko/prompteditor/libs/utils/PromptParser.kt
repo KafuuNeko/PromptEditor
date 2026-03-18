@@ -112,7 +112,7 @@ class NovelAIPromptsParser : IPromptsParser {
     override fun stringify(items: List<PromptGroupItem>): String {
         return items.joinToString(", ") { item ->
             val tagsStr = item.tags.joinToString(", ") { it.first }
-            if (item.weight == 1.0) {
+            if (item.weight == 1.0 && item.tags.size <= 1) {
                 tagsStr
             } else {
                 "${item.weight.formatWeight()}::${tagsStr}::"
@@ -205,7 +205,7 @@ class SDPromptsParser : IPromptsParser {
     override fun stringify(items: List<PromptGroupItem>): String {
         return items.joinToString(", ") { item ->
             val tagsStr = item.tags.joinToString(", ") { it.first }
-            if (item.weight == 1.0) {
+            if (item.weight == 1.0 && item.tags.size <= 1) {
                 tagsStr
             } else {
                 "(${tagsStr}:${item.weight.formatWeight()})"

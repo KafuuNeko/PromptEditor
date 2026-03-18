@@ -41,6 +41,7 @@ internal constructor(
     private val state: LazyGridState,
     private val scope: CoroutineScope,
     private val onMove: (Int, Int) -> Unit,
+    private val onDragEnd: () -> Unit = {},
 ) {
     var draggingItemIndex by mutableStateOf<Int?>(null)
         private set
@@ -75,6 +76,7 @@ internal constructor(
 
     internal fun onDragInterrupted() {
         if (draggingItemIndex != null) {
+            onDragEnd()
             previousIndexOfDraggedItem = draggingItemIndex
             val startOffset = draggingItemOffset
             scope.launch {
@@ -153,10 +155,11 @@ private operator fun Offset.plus(size: Size): Offset {
 fun rememberGridDragDropState(
     gridState: LazyGridState,
     onMove: (Int, Int) -> Unit,
+    onDragEnd: () -> Unit = {},
 ): GridDragDropState {
     val scope = rememberCoroutineScope()
     val state = remember(gridState) {
-        GridDragDropState(state = gridState, onMove = onMove, scope = scope)
+        GridDragDropState(state = gridState, onMove = onMove, onDragEnd = onDragEnd, scope = scope)
     }
     LaunchedEffect(state) {
         while (true) {

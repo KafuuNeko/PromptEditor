@@ -1,7 +1,6 @@
 package me.kafuuneko.prompteditor.feature.preset
 
 import android.content.Context
-import kotlinx.coroutines.Dispatchers
 import me.kafuuneko.prompteditor.R
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditDialogState
 import me.kafuuneko.prompteditor.feature.preset.presentation.PresetEditMode
@@ -63,24 +62,6 @@ class PresetEditViewModel :
         )?.setup()
     }
 
-    @UiIntentObserver(PresetEditUiIntent.ConfirmUpdatePromptItem::class)
-    fun onConfirmUpdatePromptItem(intent: PresetEditUiIntent.ConfirmUpdatePromptItem) {
-        val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
-        val currentMode = currentState.mode as? PresetEditMode.ListMode ?: return
-        val updatedItems = currentMode.promptItems.toMutableList()
-        if (intent.index in updatedItems.indices) {
-            val newDescription = _tagMap[intent.newTag.lowercase()]?.description ?: ""
-            updatedItems[intent.index] = updatedItems[intent.index].copy(
-                tagName = intent.newTag,
-                description = newDescription
-            )
-            currentState.copy(
-                mode = currentMode.copy(promptItems = updatedItems),
-                isSaved = false
-            ).setup()
-        }
-    }
-
     @UiIntentObserver(PresetEditUiIntent.ShowDeleteConfirmDialog::class)
     fun onShowDeleteConfirmDialog(intent: PresetEditUiIntent.ShowDeleteConfirmDialog) {
         val dialog = PresetEditDialogState.DeleteConfirm(
@@ -90,6 +71,71 @@ class PresetEditViewModel :
         getOrNull<PresetEditUiState.Normal>()
             ?.copy(dialogState = dialog)
             ?.setup()
+    }
+
+    @UiIntentObserver(PresetEditUiIntent.ShowEditDialog::class)
+    fun onShowEditDialog(intent: PresetEditUiIntent.ShowEditDialog) {
+        val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
+        val currentMode = currentState.mode as? PresetEditMode.ListMode ?: return
+        val items = currentMode.promptItems
+
+        if (intent.index in items.indices) {
+            val item = items[intent.index]
+            val dialog = PresetEditDialogState.EditDialog(
+                index = intent.index,
+                tagName = item.tagName,
+                weight = item.weight,
+                group = item.group
+            )
+            currentState.copy(dialogState = dialog).setup()
+        }
+    }
+
+    @UiIntentObserver(PresetEditUiIntent.ConfirmUpdateItem::class)
+    fun onConfirmUpdateItem(intent: PresetEditUiIntent.ConfirmUpdateItem) {
+        val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
+        val currentMode = currentState.mode as? PresetEditMode.ListMode ?: return
+        val items = currentMode.promptItems.toMutableList()
+
+        if (intent.index in items.indices) {
+            val oldGroup = items[intent.index].group
+            val isChangingGroup = oldGroup != intent.group
+            val newDescription =
+                _tagMap[intent.tagName.lowercase()]?.description ?: items[intent.index].description
+
+            val newGroupItems =
+                items.filter { it.group == intent.group && it !== items[intent.index] }
+            val finalWeight = if (isChangingGroup && newGroupItems.isNotEmpty()) {
+                newGroupItems.first().weight
+            } else {
+                intent.weight
+            }
+
+            // 更新同一组内所有 item 的 weight 和 group。如果是修改单个 tagName，则只更新目标 index 的 tagName
+            val updatedItems = items.mapIndexed { index, item ->
+                if (index == intent.index) {
+                    item.copy(
+                        tagName = intent.tagName,
+                        description = newDescription,
+                        weight = finalWeight,
+                        group = intent.group
+                    )
+                } else if (item.group == intent.group) {
+                    item.copy(weight = finalWeight)
+                } else {
+                    item
+                }
+            }
+
+            // 按 group 排序，使相同组别的 tags 排列在一起
+            val sortedItems = updatedItems.sortedBy { it.group }
+
+            currentState.copy(
+                mode = currentMode.copy(promptItems = sortedItems),
+                dialogState = PresetEditDialogState.None,
+                isSaved = false
+            ).setup()
+        }
     }
 
     @UiIntentObserver(PresetEditUiIntent.ConfirmDeletePromptItem::class)
@@ -123,6 +169,29 @@ class PresetEditViewModel :
                 isSaved = false
             ).setup()
         }
+    }
+
+    @UiIntentObserver(PresetEditUiIntent.ReassignGroups::class)
+    fun onReassignGroups() {
+        val currentState = getOrNull<PresetEditUiState.Normal>() ?: return
+        val currentMode = currentState.mode as? PresetEditMode.ListMode ?: return
+        val updatedItems = currentMode.promptItems
+        if (updatedItems.isEmpty()) return
+
+        var currentGroupIndex = 0
+        var currentOldGroup = updatedItems.first().group
+        val newItems = updatedItems.map { item ->
+            if (item.group != currentOldGroup) {
+                currentGroupIndex++
+                currentOldGroup = item.group
+            }
+            item.copy(group = currentGroupIndex)
+        }
+
+        currentState.copy(
+            mode = currentMode.copy(promptItems = newItems),
+            isSaved = false
+        ).setup()
     }
 
     @UiIntentObserver(PresetEditUiIntent.ToggleEditMode::class)

@@ -105,6 +105,8 @@
     <string name="tags_selected">%1$d tags selected</string>
     <string name="confirm_selection">Confirm</string>
     <string name="edit_tags">Edit Tags</string>
+    <string name="weight">Weight</string>
+    <string name="group">Group</string>
 
     <!-- Confirm Dialog -->
     <string name="confirm_delete">Confirm Delete</string>

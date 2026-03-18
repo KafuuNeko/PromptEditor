@@ -132,7 +132,12 @@ private fun DialogSwitch(
                     )
                 }
             ) {
-                Text(stringResource(R.string.delete_selected_presets_confirmation, dialogState.presetCount))
+                Text(
+                    stringResource(
+                        R.string.delete_selected_presets_confirmation,
+                        dialogState.presetCount
+                    )
+                )
             }
         }
 
@@ -207,7 +212,10 @@ private fun NormalPresetSetEditLayout(
                 FloatingActionButton(
                     onClick = { emit(PresetSetEditUiIntent.ShowCreateDialog) }
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_preset))
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = stringResource(R.string.add_preset)
+                    )
                 }
             }
         },
@@ -224,7 +232,12 @@ private fun NormalPresetSetEditLayout(
                     },
                     onRename = {
                         if (selectedPreset != null) {
-                            emit(PresetSetEditUiIntent.ShowRenameDialog(selectedPreset.id, selectedPreset.name))
+                            emit(
+                                PresetSetEditUiIntent.ShowRenameDialog(
+                                    selectedPreset.id,
+                                    selectedPreset.name
+                                )
+                            )
                         }
                     },
                     onDelete = {
@@ -374,9 +387,9 @@ private fun DragListMode(
     modifier: Modifier = Modifier
 ) {
     val gridState = rememberLazyGridState()
-    val dragDropState = rememberGridDragDropState(gridState) { fromIndex, toIndex ->
+    val dragDropState = rememberGridDragDropState(gridState, { fromIndex, toIndex ->
         onReorder(fromIndex, toIndex)
-    }
+    })
 
     Column(modifier = modifier) {
         // Only show tip when not in multi-select mode
