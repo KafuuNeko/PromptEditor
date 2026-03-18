@@ -22,6 +22,7 @@
     <!-- Main Screen -->
     <string name="exit_app_confirmation">確定要離開應用程式嗎？</string>
     <string name="create_preset_set">建立預設集</string>
+    <string name="parser_type">解析器類型</string>
     <string name="delete_preset_set">刪除預設集</string>
     <string name="delete_preset_set_confirmation">確定要刪除預設集「%1$s」嗎？此操作將同時刪除其中的所有預設。</string>
     <string name="import_tags">匯入Tags</string>

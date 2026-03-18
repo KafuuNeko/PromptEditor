@@ -22,6 +22,7 @@
     <!-- Main Screen -->
     <string name="exit_app_confirmation">Вы уверены, что хотите выйти из приложения?</string>
     <string name="create_preset_set">Создать набор пресетов</string>
+    <string name="parser_type">Тип парсера</string>
     <string name="delete_preset_set">Удалить набор пресетов</string>
     <string name="delete_preset_set_confirmation">Вы уверены, что хотите удалить набор пресетов \"%1$s\"? Это также удалит все пресеты в нём.</string>
     <string name="import_tags">Импорт тегов</string>

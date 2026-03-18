@@ -6,8 +6,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,11 +27,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -76,11 +82,9 @@ private fun DialogSwitch(
             Text(stringResource(R.string.exit_app_confirmation))
         }
 
-        MainDialogState.CreatePresetSet -> InputConfirmDialog(
-            title = stringResource(R.string.create_preset_set),
-            hintText = stringResource(R.string.preset_set_name_hint),
-            onConfirmRequest = { MainUiIntent.CreatePresetSet(it).emit() },
-            onDismissRequest = { MainUiIntent.DismissDialog.emit() }
+        MainDialogState.CreatePresetSet -> CreatePresetSetDialog(
+            onDismissRequest = { MainUiIntent.DismissDialog.emit() },
+            onConfirmRequest = { name, parser -> MainUiIntent.CreatePresetSet(name, parser).emit() }
         )
 
         is MainDialogState.DeletePresetSet -> ConfirmDialog(
@@ -107,6 +111,65 @@ private fun DialogSwitch(
             },
             onDismissRequest = { MainUiIntent.DismissDialog.emit() }
         )
+    }
+}
+
+@Composable
+private fun CreatePresetSetDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmRequest: (String, Int) -> Unit
+) {
+    var inputText by remember { mutableStateOf("") }
+    var selectedParser by remember { mutableIntStateOf(0) }
+
+    ConfirmDialog(
+        onDismissRequest = onDismissRequest,
+        onConfirmRequest = { onConfirmRequest(inputText, selectedParser) }
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(R.string.create_preset_set),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.align(Alignment.Start)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            OutlinedTextField(
+                value = inputText,
+                onValueChange = { inputText = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                placeholder = { Text(stringResource(R.string.preset_set_name_hint)) }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.parser_type),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.align(Alignment.Start)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = selectedParser == 0,
+                        onClick = { selectedParser = 0 }
+                    )
+                    Text(text = stringResource(R.string.parser_novelai))
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(
+                        selected = selectedParser == 1,
+                        onClick = { selectedParser = 1 }
+                    )
+                    Text(text = stringResource(R.string.parser_sd))
+                }
+            }
+        }
     }
 }
 

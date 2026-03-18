@@ -8,6 +8,7 @@ sealed class PresetSetEditUiState {
     data class Normal(
         val presetSetId: Long = 0L,
         val presetSetName: String = "",
+        val parser: Int = 0,
         val presets: List<Preset> = emptyList(),
         val isLoading: Boolean = false,
         val dialogState: PresetSetEditDialogState = PresetSetEditDialogState.None,

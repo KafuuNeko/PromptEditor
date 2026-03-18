@@ -12,7 +12,9 @@ import me.kafuuneko.prompteditor.libs.core.CoreViewModelWithUiEffect
 import me.kafuuneko.prompteditor.libs.core.UiIntentObserver
 import me.kafuuneko.prompteditor.libs.room.entity.Tag
 import me.kafuuneko.prompteditor.libs.room.repository.PresetRepository
+import me.kafuuneko.prompteditor.libs.utils.IPromptsParser
 import me.kafuuneko.prompteditor.libs.utils.NovelAIPromptsParser
+import me.kafuuneko.prompteditor.libs.utils.SDPromptsParser
 import me.kafuuneko.prompteditor.libs.utils.PromptItem
 import me.kafuuneko.prompteditor.libs.utils.expand
 import me.kafuuneko.prompteditor.libs.utils.fold
@@ -22,7 +24,7 @@ import org.koin.core.component.inject
 class PresetEditViewModel :
     CoreViewModelWithUiEffect<PresetEditUiIntent, PresetEditUiState>(PresetEditUiState.None),
     KoinComponent {
-    private val _parser = NovelAIPromptsParser()
+    private var _parser: IPromptsParser = NovelAIPromptsParser()
 
     private var _tagMap = emptyMap<String, Tag>()
     private val _context by inject<Context>()
@@ -40,6 +42,8 @@ class PresetEditViewModel :
     private suspend fun loadPreset() {
         val preset = _presetRepository.getPresetById(_currentPresetId)
         if (preset != null) {
+            val presetSet = _presetRepository.getPresetSetById(preset.presetSetId)
+            _parser = if (presetSet?.parser == 1) SDPromptsParser() else NovelAIPromptsParser()
             val promptItems = _parser.parse(input = preset.prompts, tagMap = _tagMap)
             PresetEditUiState.Normal(
                 presetId = preset.id,

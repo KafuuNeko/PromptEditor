@@ -22,6 +22,7 @@
     <!-- Main Screen -->
     <string name="exit_app_confirmation">Voulez-vous vraiment quitter l\'application?</string>
     <string name="create_preset_set">Créer un ensemble de préréglages</string>
+    <string name="parser_type">Type de parseur</string>
     <string name="delete_preset_set">Supprimer l\'ensemble de préréglages</string>
     <string name="delete_preset_set_confirmation">Voulez-vous vraiment supprimer l\'ensemble de préréglages \"%1$s\"? Cela supprimera également tous les préréglages qu\'il contient.</string>
     <string name="import_tags">Importer des Tags</string>

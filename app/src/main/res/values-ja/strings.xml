@@ -22,6 +22,7 @@
     <!-- Main Screen -->
     <string name="exit_app_confirmation">アプリを終了しますか？</string>
     <string name="create_preset_set">プリセットセットを作成</string>
+    <string name="parser_type">パーサータイプ</string>
     <string name="delete_preset_set">プリセットセットを削除</string>
     <string name="delete_preset_set_confirmation">プリセットセット「%1$s」を削除しますか？この操作すると其中的すべてのプリセットも削除されます。</string>
     <string name="import_tags">Tagsをインポート</string>

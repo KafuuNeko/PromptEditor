@@ -22,6 +22,7 @@
     <!-- Main Screen -->
     <string name="exit_app_confirmation">앱을 종료하시겠습니까?</string>
     <string name="create_preset_set">프리셋 세트 만들기</string>
+    <string name="parser_type">파서 유형</string>
     <string name="delete_preset_set">프리셋 세트 삭제</string>
     <string name="delete_preset_set_confirmation">프리셋 세트 \"%1$s\"을(를) 삭제하시겠습니까? 여기에 있는 모든 프리셋도 함께 삭제됩니다.</string>
     <string name="import_tags">Tags 가져오기</string>

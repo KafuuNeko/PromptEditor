@@ -175,7 +175,19 @@ private fun NormalPresetSetEditLayout(
                     if (uiState.isMultiSelectMode) {
                         Text(stringResource(R.string.selected_count, selectedCount))
                     } else {
-                        Text(uiState.presetSetName)
+                        Column {
+                            Text(uiState.presetSetName)
+                            val parserName = if (uiState.parser == 0) {
+                                stringResource(R.string.parser_novelai)
+                            } else {
+                                stringResource(R.string.parser_sd)
+                            }
+                            Text(
+                                text = parserName,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 },
                 navigationIcon = {

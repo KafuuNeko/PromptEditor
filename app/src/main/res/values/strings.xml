@@ -22,6 +22,9 @@
     <!-- Main Screen -->
     <string name="exit_app_confirmation">Are you sure you want to exit?</string>
     <string name="create_preset_set">Create Preset Set</string>
+    <string name="parser_type">Parser Type</string>
+    <string name="parser_novelai" translatable="false">NovelAI</string>
+    <string name="parser_sd" translatable="false">Stable Diffusion</string>
     <string name="delete_preset_set">Delete Preset Set</string>
     <string name="delete_preset_set_confirmation">Are you sure you want to delete preset set \"%1$s\"? This will also delete all presets in it.</string>
     <string name="import_tags">Import Tags</string>

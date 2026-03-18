@@ -40,6 +40,7 @@ class PresetSetEditViewModel :
             PresetSetEditUiState.Normal(
                 presetSetId = _currentPresetSetId,
                 presetSetName = presetSet?.name ?: "",
+                parser = presetSet?.parser ?: 0,
                 presets = presets,
                 isLoading = false,
                 dialogState = PresetSetEditDialogState.None

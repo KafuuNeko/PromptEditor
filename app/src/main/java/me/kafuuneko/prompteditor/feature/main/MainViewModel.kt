@@ -50,7 +50,7 @@ class MainViewModel :
     @UiIntentObserver(MainUiIntent.CreatePresetSet::class)
     suspend fun onCreatePresetSet(intent: MainUiIntent.CreatePresetSet) {
         enqueueAsyncTask(Dispatchers.IO) {
-            val newPresetSet = PresetSet(name = intent.name)
+            val newPresetSet = PresetSet(name = intent.name, parser = intent.parser)
             _presetRepository.insertPresetSet(newPresetSet)
             MainUiEffect.ShowToast(R.string.preset_set_created, listOf(intent.name)).tryEmit()
             loadPresetSets()
